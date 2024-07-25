@@ -10,6 +10,7 @@
 	import GameOverPage from "./GameOverPage.svelte"
 	import Display from "./Display.svelte"
 	import type { DndEvent } from "svelte-dnd-action"
+	import Notification from "./Notification.svelte"
 
 	let rawSentences
 	let timerInterval: number | undefined
@@ -86,6 +87,19 @@
 		}
 	}
 
+	let notification = { show: false, message: "", type: "info" } as {
+		show: boolean
+		message: string
+		type: "success" | "error" | "info"
+	}
+
+	function showNotification(message: string, type: "success" | "error" | "info" = "info") {
+		notification = { show: true, message, type }
+		setTimeout(() => {
+			notification = { show: false, message: "", type: "info" }
+		}, 3000)
+	}
+
 	function getOriginalAndScrambledWords(): [Word[], Word[]] {
 		const { words: correctOrder } = $sentences[$currentSentence.id]
 		const { words: scrambledWords } = $currentSentence
@@ -118,9 +132,13 @@
 		const wordsInCorrectPosition = scrambledWords.every((word, index) => word.token === correctOrder[index].token)
 
 		if (wordsInCorrectPosition) {
+			showNotification("Correct order!", "success")
 			nextSentence()
 		} else if (gameModes[$gameState.mode].lives) {
 			updateGameState().updateLives(-1)
+			if (!gameModes[$gameState.mode].autoCheck) {
+				showNotification("Incorrect order. Try again!", "error")
+			}
 		}
 	}
 
@@ -145,7 +163,15 @@
 			}
 		}
 
-		selectedHint === "extraLife" ? updateGameState().updateLives(1) : updateGameState().updateHints(selectedHint, 1)
+		if (selectedHint) {
+			if (selectedHint === "extraLife") {
+				updateGameState().updateLives(1)
+				showNotification("You got an extra life!", "info")
+			} else {
+				updateGameState().updateHints(selectedHint, 1)
+				showNotification(`You got a new ${selectedHint} hint!`, "info")
+			}
+		}
 	}
 
 	export function swapElements<T>(arr: T[], index1: number, index2: number): void {
@@ -289,6 +315,12 @@
 </script>
 
 <main>
+	{#if notification.show}
+		<Notification
+			message={notification.message}
+			type={notification.type}
+		/>
+	{/if}
 	{#if $sentences.length === 0}
 		<div class="loading">
 			<p>Loading...</p>
@@ -301,7 +333,7 @@
 			{onWordClick}
 			{lockWord}
 			{connectWords}
-			checkSentenceOrder={validateOrder}
+			{validateOrder}
 			{nextSentence}
 		/>
 	{:else}

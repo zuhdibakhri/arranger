@@ -4,8 +4,8 @@
 
 	export let lockWord: () => void
 	export let connectWords: () => void
-	export let checkSentenceOrder: () => void
 	export let nextSentence: () => void
+	export let validateOrder: () => void
 
 	const EXTRA_TIME_DURATION = 15
 	const testMode = false
@@ -47,7 +47,7 @@
 	{#if !gameModes[$gameState.mode].autoCheck}
 		<button
 			class="buttons-item"
-			on:click={checkSentenceOrder}
+			on:click={validateOrder}
 			title="Check"
 		>
 			<i class="fas fa-check"></i>
