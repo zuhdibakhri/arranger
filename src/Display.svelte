@@ -2,7 +2,6 @@
 	import { dndzone } from "svelte-dnd-action"
 	import { gameState, currentSentence } from "./stores"
 	import { gameModes } from "./gameModes"
-	import type { Sentence } from "./types"
 	import ButtonGroup from "./ButtonGroup.svelte"
 
 	export let onDragAndDrop: (e: any, isFinal: boolean) => void

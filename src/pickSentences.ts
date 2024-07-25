@@ -1,6 +1,6 @@
-import type { Sentence, Word, SurroundingSentences } from "./types"
+import type { Sentence } from "./types"
 
-const MIN_SENTENCE_LENGTH = 3
+const MIN_SENTENCE_LENGTH = 4
 const MIN_SCORE = 4
 const MAX_SCORE = 80
 const SCORE_RANGE = 5
@@ -23,14 +23,15 @@ function createScoreRanges(start: number, end: number, step: number): Array<{ ma
 function filterValidSentences(sentences: Sentence[]): Sentence[] {
 	return sentences.filter((sentence: Sentence) => {
 		const words = sentence.words
-		const score = sentence.total_score
+		const totalSentencesScore =
+			sentence.total_score +
+			sentence.prev_sentences.reduce((a, b) => a + b.total_score, 0) +
+			sentence.next_sentences.reduce((a, b) => a + b.total_score, 0)
+		const numberOfSentences = sentence.prev_sentences.length + 1 + sentence.next_sentences.length
+		const averageSentenceScore = totalSentencesScore / numberOfSentences
 
-		return (
-			words.length > MIN_SENTENCE_LENGTH &&
-			score >= MIN_SCORE &&
-			score <= MAX_SCORE &&
-			!words.some(w => w.score > SCORE_CAP)
-		)
+		const allWordsScoreAreBelowCap = words.every(w => w.score <= SCORE_CAP)
+		return allWordsScoreAreBelowCap && sentence.total_score >= averageSentenceScore
 	})
 }
 
@@ -75,7 +76,7 @@ function selectRandomSentencesFromEachGroup(availableSentences: { [key: string]:
 		}
 	})
 
-	return result
+	return result.sort((a, b) => a.total_score - b.total_score)
 }
 
 export function pickRandomSentences(rawSentences: Sentence[]): Sentence[] {
@@ -93,9 +94,7 @@ export function pickRandomSentences(rawSentences: Sentence[]): Sentence[] {
 		})),
 	}))
 
-	const sortedSentences = enhancedSentences.sort((a: Sentence, b: Sentence) => a.total_score - b.total_score)
-
-	return sortedSentences.map((sentence, index) => ({
+	return enhancedSentences.map((sentence, index) => ({
 		...sentence,
 		id: index,
 	}))
