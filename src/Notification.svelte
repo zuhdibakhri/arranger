@@ -14,14 +14,15 @@
 
 <style>
 	.notification {
-		position: fixed;
-		top: 20px;
-		right: 20px;
+		margin-top: 1rem;
 		padding: 10px 20px;
 		border-radius: 5px;
 		color: white;
 		font-weight: bold;
-		z-index: 1000;
+		text-align: center;
+		width: fit-content;
+		margin-inline: auto;
+		position: static;
 	}
 
 	.success {

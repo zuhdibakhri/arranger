@@ -8,8 +8,8 @@
 	export let onWordClick: (wordId: number) => void
 	export let lockWord: () => void
 	export let connectWords: () => void
-	export let nextSentence: () => void
 	export let validateOrder: () => void
+	export let nextSentence: () => void
 
 	$: combinedParagraph =
 		$currentSentence.prev_sentences.map(s => s.sentence).join(" ") +

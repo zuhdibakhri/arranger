@@ -132,12 +132,12 @@
 		const wordsInCorrectPosition = scrambledWords.every((word, index) => word.token === correctOrder[index].token)
 
 		if (wordsInCorrectPosition) {
-			showNotification("Correct order!", "success")
+			showNotification("Correct!", "success")
 			nextSentence()
 		} else if (gameModes[$gameState.mode].lives) {
 			updateGameState().updateLives(-1)
 			if (!gameModes[$gameState.mode].autoCheck) {
-				showNotification("Incorrect order. Try again!", "error")
+				showNotification("Try again!", "error")
 			}
 		}
 	}
@@ -166,10 +166,10 @@
 		if (selectedHint) {
 			if (selectedHint === "extraLife") {
 				updateGameState().updateLives(1)
-				showNotification("You got an extra life!", "info")
+				showNotification("+1 life", "info")
 			} else {
 				updateGameState().updateHints(selectedHint, 1)
-				showNotification(`You got a new ${selectedHint} hint!`, "info")
+				showNotification(`+1 hint: ${selectedHint}`, "info")
 			}
 		}
 	}
@@ -315,12 +315,6 @@
 </script>
 
 <main>
-	{#if notification.show}
-		<Notification
-			message={notification.message}
-			type={notification.type}
-		/>
-	{/if}
 	{#if $sentences.length === 0}
 		<div class="loading">
 			<p>Loading...</p>
@@ -336,6 +330,12 @@
 			{validateOrder}
 			{nextSentence}
 		/>
+		{#if notification.show}
+			<Notification
+				message={notification.message}
+				type={notification.type}
+			/>
+		{/if}
 	{:else}
 		<GameOverPage
 			finalLevel={$currentSentence.id + 1}
