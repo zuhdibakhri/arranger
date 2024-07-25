@@ -72,3 +72,5 @@ export interface GameState {
 }
 
 export type HintKey = keyof GameMode["hintsWeight"]
+
+export type NotifType = "success" | "error" | "info"

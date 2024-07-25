@@ -3,7 +3,7 @@
 	import { onMount } from "svelte"
 	import _ from "lodash"
 	import { gameState, updateGameState, currentSentence, sentences } from "./stores"
-	import type { Word, Sentence, GameModeKey, HintKey, Timer } from "./types"
+	import type { Word, Sentence, GameModeKey, HintKey, Timer, NotifType } from "./types"
 	import { pickRandomSentences } from "./pickSentences"
 	import { gameModes } from "./gameModes"
 	import StartPage from "./StartPage.svelte"
@@ -90,10 +90,10 @@
 	let notification = { show: false, message: "", type: "info" } as {
 		show: boolean
 		message: string
-		type: "success" | "error" | "info"
+		type: NotifType
 	}
 
-	function showNotification(message: string, type: "success" | "error" | "info" = "info") {
+	function showNotification(message: string, type: NotifType = "info") {
 		notification = { show: true, message, type }
 		setTimeout(() => {
 			notification = { show: false, message: "", type: "info" }
