@@ -77,11 +77,10 @@ function enhanceSentencesWithGameProperties(sentences: Sentence[]): Sentence[] {
 
 export function pickRandomSentences(rawSentences: Sentence[]): Sentence[] {
 	const currentGameState = get(gameState)
-	const isRelaxMode = currentGameState.mode === "relax"
 
 	const validSentences = rawSentences.filter(isValidSentence)
 
-	if (isRelaxMode) {
+	if (currentGameState.mode["constantScoreRange"]) {
 		const relaxModeSentences = validSentences.filter(
 			sentence => sentence.total_score >= RELAX_MODE_MIN_SCORE && sentence.total_score <= RELAX_MODE_MAX_SCORE
 		)

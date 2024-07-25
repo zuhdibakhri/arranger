@@ -53,7 +53,7 @@ export interface GameMode {
 	}
 	autoCheck: boolean
 	lives: number | null
-	isRelaxMode: boolean
+	constantScoreRange: boolean
 }
 
 export type GameModeKey = keyof typeof gameModes
