@@ -8,7 +8,6 @@
 	--color-background-light: #f0f4f8;
 }
 
-/* Base styles */
 html {
 	font-size: 16px;
 	font-family: var(--font-family);
@@ -27,7 +26,6 @@ body {
 	user-select: none;
 }
 
-/* Typography */
 h1,
 h2 {
 	font-size: 2.5rem;
@@ -35,7 +33,6 @@ h2 {
 	color: var(--color-primary);
 }
 
-/* Layout */
 .container {
 	max-height: 90vh;
 	width: 90%;
@@ -54,7 +51,6 @@ h2 {
 	text-align: center;
 }
 
-/* Components */
 .card {
 	padding: 2em;
 }
@@ -82,7 +78,6 @@ button:focus-visible {
 	outline: 4px auto -webkit-focus-ring-color;
 }
 
-/* Game-specific styles */
 .paragraph-info {
 	display: flex;
 	justify-content: space-between;
@@ -191,7 +186,6 @@ button:focus-visible {
 	pointer-events: none;
 }
 
-/* Pages */
 .start-page,
 .game-over {
 	display: flex;
@@ -234,7 +228,6 @@ button:focus-visible {
 	border-radius: 4px;
 }
 
-/* Media Queries */
 @media (max-width: 768px) {
 	html {
 		font-size: 14px;
@@ -256,7 +249,7 @@ button:focus-visible {
 	}
 
 	.buttons {
-		justify-content: flex-start;
+		justify-content: center;
 	}
 
 	.buttons-item {
