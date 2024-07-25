@@ -1,6 +1,7 @@
 import type { Sentence } from "./types"
 import { get } from "svelte/store"
 import { gameState } from "./stores"
+import { gameModes } from "./gameModes"
 
 const MAX_SENTENCE_SCORE = 80
 const SCORE_RANGE_SIZE = 5
@@ -76,11 +77,10 @@ function enhanceSentencesWithGameProperties(sentences: Sentence[]): Sentence[] {
 }
 
 export function pickRandomSentences(rawSentences: Sentence[]): Sentence[] {
-	const currentGameState = get(gameState)
-
+	const { mode } = get(gameState)
 	const validSentences = rawSentences.filter(isValidSentence)
 
-	if (currentGameState.mode["constantScoreRange"]) {
+	if (mode && gameModes[mode].constantScoreRange) {
 		const relaxModeSentences = validSentences.filter(
 			sentence => sentence.total_score >= RELAX_MODE_MIN_SCORE && sentence.total_score <= RELAX_MODE_MAX_SCORE
 		)

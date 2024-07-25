@@ -8,7 +8,7 @@
 	export let nextSentence: () => void
 
 	const EXTRA_TIME_DURATION = 15
-	const testMode = true
+	const testMode = false
 </script>
 
 <div class="buttons">
