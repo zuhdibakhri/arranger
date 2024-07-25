@@ -1,8 +1,5 @@
 <script lang="ts">
 	import "./app.css"
-
-	// import data from "./SENTENCES.json"
-
 	import { onMount } from "svelte"
 	import _ from "lodash"
 	import { gameState, updateGameState, currentSentence, sentences } from "./stores"

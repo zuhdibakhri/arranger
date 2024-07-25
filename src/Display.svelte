@@ -67,3 +67,21 @@
 		{nextParagraph}
 	/>
 </div>
+
+<style>
+	.paragraph-info {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1rem;
+		font-weight: bold;
+		color: #007bff;
+	}
+
+	@media (max-width: 480px) {
+		.paragraph-info {
+			font-size: 0.9rem;
+		}
+	}
+</style>
