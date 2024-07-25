@@ -54,7 +54,7 @@ export const gameModes: Record<string, GameMode> = {
 			extraLife: 1,
 		},
 		autoCheck: false,
-		lives: null,
+		lives: 3,
 		isRelaxMode: true,
 	},
 }
