@@ -11,21 +11,3 @@
 	<button on:click={() => onStart("normal")}>Normal Mode</button>
 	<button on:click={() => onStart("relax")}>Relax Mode</button>
 </div>
-
-<style>
-	.start-page {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
-	}
-
-	h1 {
-		font-size: 3rem;
-		color: #007bff;
-	}
-
-	button {
-		width: 200px;
-	}
-</style>

@@ -63,39 +63,3 @@
 		</button>
 	{/if}
 </div>
-
-<style>
-	.buttons {
-		display: flex;
-		flex-direction: row;
-		justify-content: center;
-		flex-wrap: nowrap;
-		gap: 0.5rem;
-		margin-top: 1rem;
-		width: 100%;
-	}
-
-	:global(.buttons-item) {
-		flex: 1;
-		min-width: auto;
-		padding: 0.5em;
-	}
-
-	@media (max-width: 480px) {
-		.buttons {
-			gap: 0.25rem;
-		}
-
-		:global(.buttons-item) {
-			padding: 0.25em;
-		}
-
-		:global(.buttons-item i) {
-			font-size: 1.2em;
-		}
-
-		:global(.hint-count) {
-			font-size: 0.7em;
-		}
-	}
-</style>

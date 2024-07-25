@@ -272,3 +272,80 @@ button:focus-visible {
 		font-size: 0.8rem;
 	}
 }
+
+.start-page {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+}
+.start-page h1 {
+	font-size: 3rem;
+	color: #007bff;
+}
+
+.start-page button {
+	width: 200px;
+}
+
+.buttons {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	flex-wrap: nowrap;
+	gap: 0.5rem;
+	margin-top: 1rem;
+	width: 100%;
+}
+
+:global(.buttons-item) {
+	flex: 1;
+	min-width: auto;
+	padding: 0.5em;
+}
+
+@media (max-width: 480px) {
+	.buttons {
+		gap: 0.25rem;
+	}
+
+	:global(.buttons-item) {
+		padding: 0.25em;
+	}
+
+	:global(.buttons-item i) {
+		font-size: 1.2em;
+	}
+
+	:global(.hint-count) {
+		font-size: 0.7em;
+	}
+}
+
+.paragraph-info {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1rem;
+	font-weight: bold;
+	color: #007bff;
+}
+
+@media (max-width: 480px) {
+	.paragraph-info {
+		font-size: 0.9rem;
+	}
+}
+
+.game-over {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+}
+
+.game-over h2 {
+	font-size: 2.5rem;
+	color: #007bff;
+}

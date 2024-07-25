@@ -9,17 +9,3 @@
 	<span class="final-level">{finalLevel - 1}</span>
 	<button on:click={onRestart}>Play Again</button>
 </div>
-
-<style>
-	.game-over {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
-	}
-
-	h2 {
-		font-size: 2.5rem;
-		color: #007bff;
-	}
-</style>
