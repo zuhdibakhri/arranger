@@ -1,7 +1,7 @@
 import type { GameMode } from "./types"
 
 export const gameModes: Record<string, GameMode> = {
-	normal: {
+	survival: {
 		timer: null,
 		hintsWeight: {
 			lock: 3,
@@ -45,7 +45,7 @@ export const gameModes: Record<string, GameMode> = {
 		lives: null,
 		constantScoreRange: false,
 	},
-	relax: {
+	normal: {
 		timer: null,
 		hintsWeight: {
 			lock: 3,

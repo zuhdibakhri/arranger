@@ -69,13 +69,7 @@ button {
 }
 
 button:hover {
-	background-color: #0056b3;
 	outline: 2px solid black;
-}
-
-button:focus,
-button:focus-visible {
-	outline: 4px auto -webkit-focus-ring-color;
 }
 
 .paragraph-info {

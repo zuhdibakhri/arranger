@@ -6,8 +6,9 @@
 <div class="start-page">
 	<h1>Arranger</h1>
 	<p>Choose a game mode:</p>
-	<button on:click={() => onStart("timer")}>Timer Mode</button>
-	<button on:click={() => onStart("countdown")}>Countdown Mode</button>
-	<button on:click={() => onStart("normal")}>Normal Mode</button>
-	<button on:click={() => onStart("relax")}>Relax Mode</button>
+	<button on:click={() => onStart("normal")}>Normal (Easy)</button>
+	<button on:click={() => onStart("zen")}>Zen</button>
+	<button on:click={() => onStart("survival")}>Survival</button>
+	<button on:click={() => onStart("timer")}>Timer</button>
+	<button on:click={() => onStart("countdown")}>Countdown</button>
 </div>
