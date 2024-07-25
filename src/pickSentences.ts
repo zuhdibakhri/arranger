@@ -6,11 +6,11 @@ import { gameModes } from "./gameModes"
 const MAX_SENTENCE_SCORE = 80
 const SCORE_RANGE_SIZE = 5
 const SENTENCES_PER_RANGE = 5
-const MAX_WORD_SCORE = 3
+const MAX_WORD_SCORE = 5
 
-const RELAX_MODE_MIN_SCORE = 4
-const RELAX_MODE_MAX_SCORE = 10
-const RELAX_MODE_SENTENCES_COUNT = 25
+const CONSTANT_RANGE_MIN_SCORE = 5
+const CONSTANT_RANGE_MAX_SCORE = 10
+const CONSTANT_RANGE_SENTENCES_COUNT = 50
 
 function categorizeSentencesByScoreRange(sentences: Sentence[]): { [scoreRange: string]: Sentence[] } {
 	const categorizedSentences: { [scoreRange: string]: Sentence[] } = {}
@@ -82,9 +82,10 @@ export function pickRandomSentences(rawSentences: Sentence[]): Sentence[] {
 
 	if (mode && gameModes[mode].constantScoreRange) {
 		const relaxModeSentences = validSentences.filter(
-			sentence => sentence.total_score >= RELAX_MODE_MIN_SCORE && sentence.total_score <= RELAX_MODE_MAX_SCORE
+			sentence =>
+				sentence.total_score >= CONSTANT_RANGE_MIN_SCORE && sentence.total_score <= CONSTANT_RANGE_MAX_SCORE
 		)
-		const selectedRelaxSentences = selectRandomSentences(relaxModeSentences, RELAX_MODE_SENTENCES_COUNT)
+		const selectedRelaxSentences = selectRandomSentences(relaxModeSentences, CONSTANT_RANGE_SENTENCES_COUNT)
 		return enhanceSentencesWithGameProperties(selectedRelaxSentences)
 	}
 
