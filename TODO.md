@@ -2,7 +2,7 @@ TODO:
 
 -   Translate
 -   POS
--   Other modes (zen, constant score range)
+-   Other modes (zen)
 -   Difficulty (timer, lives, score range, hints amount or max, score cap)
 -   Explanation
 -   Visual effect on incorrect answer and game over
