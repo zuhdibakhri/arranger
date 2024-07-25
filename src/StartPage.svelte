@@ -9,6 +9,7 @@
 	<button on:click={() => onStart("timer")}>Timer Mode</button>
 	<button on:click={() => onStart("countdown")}>Countdown Mode</button>
 	<button on:click={() => onStart("normal")}>Normal Mode</button>
+	<button on:click={() => onStart("relax")}>Relax Mode</button>
 </div>
 
 <style>

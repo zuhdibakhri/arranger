@@ -53,6 +53,7 @@ export interface GameMode {
 	}
 	autoCheck: boolean
 	lives: number | null
+	isRelaxMode: boolean
 }
 
 export type GameModeKey = keyof typeof gameModes

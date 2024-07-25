@@ -11,6 +11,7 @@ export const gameModes: Record<string, GameMode> = {
 		},
 		autoCheck: false,
 		lives: 3,
+		isRelaxMode: false,
 	},
 	timer: {
 		timer: {
@@ -26,6 +27,7 @@ export const gameModes: Record<string, GameMode> = {
 		},
 		autoCheck: true,
 		lives: null,
+		isRelaxMode: false,
 	},
 	countdown: {
 		timer: {
@@ -41,5 +43,18 @@ export const gameModes: Record<string, GameMode> = {
 		},
 		autoCheck: true,
 		lives: null,
+		isRelaxMode: false,
+	},
+	relax: {
+		timer: null,
+		hintsWeight: {
+			lock: 3,
+			connect: 3,
+			extraTime: null,
+			extraLife: 1,
+		},
+		autoCheck: false,
+		lives: null,
+		isRelaxMode: true,
 	},
 }
