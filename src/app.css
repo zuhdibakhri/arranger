@@ -1,28 +1,21 @@
 :root {
-	font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
-	line-height: 1.5;
-	font-weight: 400;
-	color-scheme: light dark;
-	color: #333;
-	background-color: #ffffff;
-	font-synthesis: none;
-	text-rendering: optimizeLegibility;
+	--font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
+	--line-height: 1.5;
+	--font-weight: 400;
+	--color-primary: #007bff;
+	--color-text: #333;
+	--color-background: #ffffff;
+	--color-background-light: #f0f4f8;
 }
 
+/* Base styles */
 html {
 	font-size: 16px;
-}
-
-@media (max-width: 768px) {
-	html {
-		font-size: 14px;
-	}
-}
-
-@media (max-width: 480px) {
-	html {
-		font-size: 12px;
-	}
+	font-family: var(--font-family);
+	line-height: var(--line-height);
+	font-weight: var(--font-weight);
+	color: var(--color-text);
+	background-color: var(--color-background-light);
 }
 
 body {
@@ -31,18 +24,27 @@ body {
 	place-items: center;
 	min-width: 320px;
 	min-height: 100vh;
-	background-color: #f0f4f8;
 	user-select: none;
 }
 
-h1 {
+/* Typography */
+h1,
+h2 {
 	font-size: 2.5rem;
 	line-height: 1.1;
-	color: #007bff;
+	color: var(--color-primary);
 }
 
-.card {
-	padding: 2em;
+/* Layout */
+.container {
+	max-height: 90vh;
+	width: 90%;
+	max-width: 600px;
+	margin: 0 auto;
+	padding: 2rem;
+	background-color: var(--color-background);
+	border-radius: 12px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 #app {
@@ -52,6 +54,11 @@ h1 {
 	text-align: center;
 }
 
+/* Components */
+.card {
+	padding: 2em;
+}
+
 button {
 	border-radius: 8px;
 	border: 1px solid transparent;
@@ -59,7 +66,7 @@ button {
 	font-size: 1rem;
 	font-weight: 500;
 	font-family: inherit;
-	background-color: #007bff;
+	background-color: var(--color-primary);
 	color: white;
 	cursor: pointer;
 	transition: background-color 0.25s, border-color 0.25s;
@@ -75,23 +82,15 @@ button:focus-visible {
 	outline: 4px auto -webkit-focus-ring-color;
 }
 
-.container {
-	max-height: 90vh;
-	width: 90%;
-	max-width: 600px;
-	margin: 0 auto;
-	padding: 2rem;
-	background-color: #ffffff;
-	border-radius: 12px;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
+/* Game-specific styles */
 .paragraph-info {
 	display: flex;
 	justify-content: space-between;
 	margin-bottom: 1rem;
 	font-weight: bold;
-	color: #007bff;
+	color: var(--color-primary);
+	cursor: not-allowed;
+	pointer-events: none;
 }
 
 .paragraph-container {
@@ -114,8 +113,8 @@ button:focus-visible {
 }
 
 .word-box {
-	color: #007bff;
-	background-color: #ffffff;
+	color: var(--color-primary);
+	background-color: var(--color-background);
 	outline: 1px solid black;
 	cursor: pointer;
 	position: relative;
@@ -132,7 +131,14 @@ button:focus-visible {
 }
 
 .word-box.selected {
-	outline: solid 2px #007bff;
+	outline: solid 2px var(--color-primary);
+}
+
+.word-box.locked {
+	color: white;
+	background-color: var(--color-primary);
+	cursor: not-allowed;
+	pointer-events: none;
 }
 
 .sentence {
@@ -143,14 +149,7 @@ button:focus-visible {
 
 .loading {
 	text-align: center;
-	color: #007bff;
-}
-
-.word-box.locked {
-	color: white;
-	background-color: #007bff;
-	cursor: not-allowed;
-	pointer-events: none;
+	color: var(--color-primary);
 }
 
 .buttons {
@@ -189,6 +188,7 @@ button:focus-visible {
 	pointer-events: none;
 }
 
+/* Pages */
 .start-page,
 .game-over {
 	display: flex;
@@ -203,18 +203,13 @@ button:focus-visible {
 .start-page h1,
 .game-over h2 {
 	font-size: 2.5rem;
-	color: #007bff;
+	color: var(--color-primary);
 }
 
 .start-page button,
 .game-over button {
 	width: 100%;
 	max-width: 200px;
-}
-
-.paragraph-info {
-	cursor: not-allowed;
-	pointer-events: none;
 }
 
 .final-level {
@@ -232,35 +227,51 @@ button:focus-visible {
 	max-height: 20vh;
 	overflow-y: auto;
 	padding: 0.5rem;
-	background-color: #f0f4f8;
+	background-color: var(--color-background-light);
 	border-radius: 4px;
 }
 
+/* Media Queries */
+@media (max-width: 768px) {
+	html {
+		font-size: 14px;
+	}
+}
+
 @media (max-width: 480px) {
+	html {
+		font-size: 12px;
+	}
+
 	.container {
 		padding: 1rem;
+		width: 95%;
 	}
 
 	.paragraph-info {
 		flex-direction: column;
 		align-items: center;
+		font-size: 0.9rem;
 	}
 
 	.buttons {
 		flex-direction: column;
 		align-items: center;
+		gap: 0.25rem;
 	}
 
 	.buttons-item {
 		width: 100%;
 		max-width: 200px;
+		padding: 0.25em;
 	}
-}
 
-@media (max-width: 480px) {
-	.container {
-		padding: 1rem;
-		width: 95%;
+	.buttons-item i {
+		font-size: 1.2em;
+	}
+
+	.hint-count {
+		font-size: 0.7em;
 	}
 
 	.word-box {
@@ -271,81 +282,4 @@ button:focus-visible {
 	.combined-paragraph {
 		font-size: 0.8rem;
 	}
-}
-
-.start-page {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 1rem;
-}
-.start-page h1 {
-	font-size: 3rem;
-	color: #007bff;
-}
-
-.start-page button {
-	width: 200px;
-}
-
-.buttons {
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
-	flex-wrap: nowrap;
-	gap: 0.5rem;
-	margin-top: 1rem;
-	width: 100%;
-}
-
-:global(.buttons-item) {
-	flex: 1;
-	min-width: auto;
-	padding: 0.5em;
-}
-
-@media (max-width: 480px) {
-	.buttons {
-		gap: 0.25rem;
-	}
-
-	:global(.buttons-item) {
-		padding: 0.25em;
-	}
-
-	:global(.buttons-item i) {
-		font-size: 1.2em;
-	}
-
-	:global(.hint-count) {
-		font-size: 0.7em;
-	}
-}
-
-.paragraph-info {
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 1rem;
-	font-weight: bold;
-	color: #007bff;
-}
-
-@media (max-width: 480px) {
-	.paragraph-info {
-		font-size: 0.9rem;
-	}
-}
-
-.game-over {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 1rem;
-}
-
-.game-over h2 {
-	font-size: 2.5rem;
-	color: #007bff;
 }
