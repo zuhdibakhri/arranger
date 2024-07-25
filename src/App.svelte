@@ -1,7 +1,7 @@
 <script lang="ts">
 	import "./app.css"
 
-	import data from "./SENTENCES.json"
+	// import data from "./SENTENCES.json"
 
 	import { onMount } from "svelte"
 	import _ from "lodash"
@@ -19,17 +19,17 @@
 
 	onMount(async () => {
 		updateGameState().toStartingPage()
-		rawParagraphs = data
+		rawParagraphs = await fetchParagraphs()
 		initializeParagraphs()
 	})
 
-	// async function fetchParagraphs() {
-	// 	const response = await fetch(import.meta.env.VITE_API_URL)
-	// 	if (!response.ok) {
-	// 		throw new Error(`HTTP error! status: ${response.status}`)
-	// 	}
-	// 	return await response.json()
-	// }
+	async function fetchParagraphs() {
+		const response = await fetch(import.meta.env.VITE_API_URL)
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`)
+		}
+		return await response.json()
+	}
 
 	function initializeParagraphs() {
 		sentences.set(pickRandomSentences(rawParagraphs))

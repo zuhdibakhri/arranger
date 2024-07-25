@@ -7,8 +7,8 @@ export default defineConfig({
 	define: {
 		"import.meta.env.VITE_API_URL": JSON.stringify(
 			process.env.NODE_ENV === "production"
-				? "https://zuhdibakhri-arranger.s3.ap-southeast-2.amazonaws.com/the_sentences.json"
-				: "/api/the_sentences.json"
+				? "https://zuhdibakhri-arranger.s3.ap-southeast-2.amazonaws.com/SENTENCES.json"
+				: "/api/SENTENCES.json"
 		),
 	},
 	server: {
