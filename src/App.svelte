@@ -97,9 +97,7 @@
 	}
 
 	function getOriginalAndScrambledWords(): [Word[], Word[]] {
-		const { words: correctOrder } = $sentences[$currentSentence.id]
-		const { words: scrambledWords } = $currentSentence
-		return [correctOrder, scrambledWords]
+		return [$sentences[$currentSentence.id].words, $currentSentence.words]
 	}
 
 	function nextSentence(): void {
