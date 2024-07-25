@@ -11,16 +11,16 @@
 	import Display from "./Display.svelte"
 	import type { DndEvent } from "svelte-dnd-action"
 
-	let rawParagraphs
+	let rawSentences
 	let timerInterval: number | undefined
 
 	onMount(async () => {
 		updateGameState().toStartingPage()
-		rawParagraphs = await fetchParagraphs()
-		initializeParagraphs()
+		rawSentences = await fetchSentences()
+		initializeSentences()
 	})
 
-	async function fetchParagraphs() {
+	async function fetchSentences() {
 		const response = await fetch(import.meta.env.VITE_API_URL)
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`)
@@ -28,9 +28,9 @@
 		return await response.json()
 	}
 
-	function initializeParagraphs() {
-		sentences.set(pickRandomSentences(rawParagraphs))
-		initParagraph($sentences[0])
+	function initializeSentences() {
+		sentences.set(pickRandomSentences(rawSentences))
+		initSentence($sentences[0])
 	}
 
 	function initGame(mode: GameModeKey) {
@@ -42,11 +42,11 @@
 
 	function restartGame() {
 		updateGameState().toStartingPage()
-		initializeParagraphs()
+		initializeSentences()
 		clearTimer()
 	}
 
-	function initParagraph(sentence: Sentence): void {
+	function initSentence(sentence: Sentence): void {
 		currentSentence.set({
 			...sentence,
 			words: scrambleWords(sentence.words),
@@ -92,7 +92,7 @@
 		return [correctOrder, scrambledWords]
 	}
 
-	function nextParagraph(): void {
+	function nextSentence(): void {
 		const { id } = $currentSentence
 
 		if (id >= $sentences.length - 1) {
@@ -100,12 +100,12 @@
 			return
 		}
 
-		initParagraph($sentences[id + 1])
-		resetTimerForNextParagraph()
+		initSentence($sentences[id + 1])
+		resetTimerForNextSentence()
 		randomHintChance()
 	}
 
-	function resetTimerForNextParagraph() {
+	function resetTimerForNextSentence() {
 		const timer = gameModes[$gameState.mode].timer
 		if (timer !== null) {
 			clearTimer()
@@ -118,7 +118,7 @@
 		const wordsInCorrectPosition = scrambledWords.every((word, index) => word.token === correctOrder[index].token)
 
 		if (wordsInCorrectPosition) {
-			nextParagraph()
+			nextSentence()
 		} else if (gameModes[$gameState.mode].lives) {
 			updateGameState().updateLives(-1)
 		}
@@ -302,7 +302,7 @@
 			{lockWord}
 			{connectWords}
 			checkSentenceOrder={validateOrder}
-			{nextParagraph}
+			{nextSentence}
 		/>
 	{:else}
 		<GameOverPage
