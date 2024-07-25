@@ -9,7 +9,7 @@
 	export let lockWord: () => void
 	export let connectWords: () => void
 	export let checkSentenceOrder: () => void
-	export let nextParagraph: () => void
+	export let nextSentence: () => void
 
 	$: combinedParagraph =
 		$currentSentence.prev_sentences.map(s => s.sentence).join(" ") +
@@ -64,7 +64,7 @@
 		{lockWord}
 		{connectWords}
 		{checkSentenceOrder}
-		{nextParagraph}
+		{nextSentence}
 	/>
 </div>
 

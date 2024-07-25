@@ -5,7 +5,7 @@
 	export let lockWord: () => void
 	export let connectWords: () => void
 	export let checkSentenceOrder: () => void
-	export let nextParagraph: () => void
+	export let nextSentence: () => void
 
 	const EXTRA_TIME_DURATION = 15
 	const testMode = true
@@ -56,7 +56,7 @@
 	{#if testMode}
 		<button
 			class="buttons-item"
-			on:click={nextParagraph}
+			on:click={nextSentence}
 			title="Next"
 		>
 			<i class="fas fa-arrow-right"></i>
