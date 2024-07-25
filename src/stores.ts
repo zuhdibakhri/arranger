@@ -1,6 +1,6 @@
 import { writable } from "svelte/store"
 import { get } from "svelte/store"
-import type { GameState, Paragraph, GameModeKey, HintKey } from "./types"
+import type { GameState, Sentence, GameModeKey, HintKey } from "./types"
 import { gameModes } from "./gameModes"
 
 export const gameState = writable<GameState>()
@@ -77,5 +77,5 @@ export function updateGameState() {
 	}
 }
 
-export const paragraphs = writable<Paragraph[]>([])
-export const currentParagraph = writable<Paragraph | null>(null)
+export const sentences = writable<Sentence[]>([])
+export const currentSentence = writable<Sentence | null>(null)

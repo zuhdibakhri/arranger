@@ -1,10 +1,12 @@
 <script lang="ts">
 	import "./app.css"
 
+	import data from "./SENTENCES.json"
+
 	import { onMount } from "svelte"
 	import _ from "lodash"
-	import { gameState, updateGameState, currentParagraph, paragraphs } from "./stores"
-	import type { Word, Sentence, Paragraph, GameModeKey, HintKey, Timer } from "./types"
+	import { gameState, updateGameState, currentSentence, sentences } from "./stores"
+	import type { Word, Sentence, GameModeKey, HintKey, Timer } from "./types"
 	import { pickRandomSentences } from "./pickSentences"
 	import { gameModes } from "./gameModes"
 	import StartPage from "./StartPage.svelte"
@@ -12,26 +14,26 @@
 	import Display from "./Display.svelte"
 	import type { DndEvent } from "svelte-dnd-action"
 
-	let rawParagraphs: Sentence[][]
+	let rawParagraphs
 	let timerInterval: number | undefined
 
 	onMount(async () => {
 		updateGameState().toStartingPage()
-		rawParagraphs = await fetchParagraphs()
+		rawParagraphs = data
 		initializeParagraphs()
 	})
 
-	async function fetchParagraphs() {
-		const response = await fetch(import.meta.env.VITE_API_URL)
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`)
-		}
-		return await response.json()
-	}
+	// async function fetchParagraphs() {
+	// 	const response = await fetch(import.meta.env.VITE_API_URL)
+	// 	if (!response.ok) {
+	// 		throw new Error(`HTTP error! status: ${response.status}`)
+	// 	}
+	// 	return await response.json()
+	// }
 
 	function initializeParagraphs() {
-		paragraphs.set(pickRandomSentences(rawParagraphs))
-		initParagraph($paragraphs[0])
+		sentences.set(pickRandomSentences(rawParagraphs))
+		initParagraph($sentences[0])
 	}
 
 	function initGame(mode: GameModeKey) {
@@ -47,13 +49,10 @@
 		clearTimer()
 	}
 
-	function initParagraph(paragraph: Paragraph): void {
-		currentParagraph.set({
-			...paragraph,
-			sentences: paragraph.sentences.map(sentence => ({
-				...sentence,
-				words: sentence.chosen ? scrambleWords(sentence.words) : sentence.words,
-			})),
+	function initParagraph(sentence: Sentence): void {
+		currentSentence.set({
+			...sentence,
+			words: scrambleWords(sentence.words),
 		})
 	}
 
@@ -77,7 +76,7 @@
 
 	function calculateNewTime(timerConfig: Timer, starting: boolean) {
 		if (timerConfig.resetOnNewLevel) {
-			return timerConfig.increment * (1 + Math.floor($currentParagraph.id / 5))
+			return timerConfig.increment * (1 + Math.floor($currentSentence.id / 5))
 		}
 		return starting ? timerConfig.initial : $gameState.timeRemaining + timerConfig.increment
 	}
@@ -91,20 +90,20 @@
 	}
 
 	function getOriginalAndScrambledWords(): [Word[], Word[]] {
-		const { words: correctOrder } = _.find($paragraphs[$currentParagraph.id].sentences, "chosen")
-		const { words: scrambledWords } = _.find($currentParagraph.sentences, "chosen")
+		const { words: correctOrder } = $sentences[$currentSentence.id]
+		const { words: scrambledWords } = $currentSentence
 		return [correctOrder, scrambledWords]
 	}
 
 	function nextParagraph(): void {
-		const { id } = $currentParagraph
+		const { id } = $currentSentence
 
-		if (id >= $paragraphs.length - 1) {
+		if (id >= $sentences.length - 1) {
 			updateGameState().gameOver()
 			return
 		}
 
-		initParagraph($paragraphs[id + 1])
+		initParagraph($sentences[id + 1])
 		resetTimerForNextParagraph()
 		randomHintChance()
 	}
@@ -160,20 +159,15 @@
 		return words.findIndex(word => (typeof target === "number" ? word.id === target : word.token === target))
 	}
 
-	export function modifyParagraph(paragraph: Paragraph, newWords: Word[]): Paragraph {
-		const sentenceIndex = _.findIndex(paragraph.sentences, "chosen")
-		return _.set(_.cloneDeep(paragraph), `sentences[${sentenceIndex}].words`, newWords)
-	}
-
 	function onDragAndDropWrapper(e: CustomEvent<DndEvent<Word>>, isFinal: boolean): void {
 		const { items } = e.detail
 		const updatedWords = handleLockedWordsInDragAndDrop(items as Word[])
-		updateScrambledWords(updatedWords)
+		currentSentence.update(sentence => ({ ...sentence, words: updatedWords }))
 		if (isFinal && gameModes[$gameState.mode].autoCheck) validateOrder()
 	}
 
 	function handleLockedWordsInDragAndDrop(newWords: Word[]): Word[] {
-		const originalWords = _.find($currentParagraph.sentences, "chosen").words
+		const originalWords = $currentSentence.words
 		const updatedWords = [...newWords]
 
 		originalWords.forEach((word, index) => {
@@ -190,16 +184,8 @@
 		return updatedWords
 	}
 
-	function updateScrambledWords(newWords: Word[]) {
-		currentParagraph.update(para => ({
-			...para,
-			sentences: para.sentences.map(sentence => (sentence.chosen ? { ...sentence, words: newWords } : sentence)),
-		}))
-	}
-
 	function onWordClick(wordId: number): void {
-		const paragraph = $currentParagraph
-		const words = _.find(paragraph.sentences, "chosen").words
+		const words = $currentSentence.words
 		const clickedWordIndex = indexOfWord(words, wordId)
 		const selectedWordIndex = words.findIndex(w => w.selected)
 
@@ -210,7 +196,7 @@
 			words.forEach(w => (w.selected = false))
 		}
 
-		currentParagraph.set(modifyParagraph(paragraph, words))
+		currentSentence.update(sentence => ({ ...sentence, words }))
 		if (gameModes[$gameState.mode].autoCheck) validateOrder()
 	}
 
@@ -238,7 +224,7 @@
 		swapElements(scrambledWords, currentPosition, correctPosition)
 		scrambledWords[correctPosition].locked = true
 
-		currentParagraph.set(modifyParagraph($currentParagraph, scrambledWords))
+		currentSentence.update(sentence => ({ ...sentence, words: scrambledWords }))
 		updateGameState().updateHints("lock", -1)
 		if (gameModes[$gameState.mode].autoCheck) validateOrder()
 	}
@@ -300,13 +286,13 @@
 		scrambledWords[firstWordIndex].connectionRight = connectionColor
 		scrambledWords[secondWordIndex].connectionLeft = connectionColor
 
-		currentParagraph.set(modifyParagraph($currentParagraph, scrambledWords))
+		currentSentence.update(sentence => ({ ...sentence, words: scrambledWords }))
 		updateGameState().updateHints("connect", -1)
 	}
 </script>
 
 <main>
-	{#if $paragraphs.length === 0}
+	{#if $sentences.length === 0}
 		<div class="loading">
 			<p>Loading...</p>
 		</div>
@@ -323,7 +309,7 @@
 		/>
 	{:else}
 		<GameOverPage
-			finalLevel={$currentParagraph.id + 1}
+			finalLevel={$currentSentence.id + 1}
 			onRestart={restartGame}
 		/>
 	{/if}

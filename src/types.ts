@@ -1,6 +1,15 @@
 import { gameModes } from "./gameModes"
 
-export interface Word {
+export type Sentence = {
+	id: number
+	current_sentence: string
+	words: Word[]
+	total_score: number
+	prev_sentences: SurroundingSentences[]
+	next_sentences: SurroundingSentences[]
+}
+
+export type Word = {
 	id: number
 	token: string
 	tag: string
@@ -12,17 +21,9 @@ export interface Word {
 	connectionRight: string
 }
 
-export interface Sentence {
-	id: number
+export type SurroundingSentences = {
 	sentence: string
-	words: Word[]
 	total_score: number
-	chosen: boolean
-}
-
-export interface Paragraph {
-	id: number
-	sentences: Sentence[]
 }
 
 export interface DragEvent extends Event {
