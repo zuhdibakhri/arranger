@@ -74,3 +74,8 @@ export interface GameState {
 export type HintKey = keyof GameMode["hintsWeight"]
 
 export type NotifType = "success" | "error" | "info"
+export type NotifContent = {
+	show: boolean
+	message: string
+	type: NotifType
+}
