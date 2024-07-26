@@ -1,6 +1,6 @@
 import { writable } from "svelte/store"
 import { get } from "svelte/store"
-import type { GameState, Sentence, GameModeKey, HintKey } from "./types"
+import type { GameState, Sentence, GameModeKey, HintKey, NotifContent, NotifType } from "./types"
 import { gameModes } from "./gameModes"
 
 export const gameState = writable<GameState>({
@@ -95,3 +95,12 @@ export function updateGameState() {
 
 export const sentences = writable<Sentence[]>([])
 export const currentSentence = writable<Sentence | null>(null)
+
+export const notification = writable<NotifContent>({ show: false, message: "", type: "info" })
+
+export function showNotification(message: string, type: NotifType = "info") {
+	notification.set({ show: true, message, type })
+	setTimeout(() => {
+		notification.set({ show: false, message: "", type: "info" })
+	}, 500)
+}

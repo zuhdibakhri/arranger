@@ -2,7 +2,7 @@
 	import "./app.css"
 	import { onMount } from "svelte"
 	import _ from "lodash"
-	import { gameState, updateGameState, currentSentence, sentences } from "./stores"
+	import { gameState, updateGameState, currentSentence, sentences, notification, showNotification } from "./stores"
 	import type { Word, Sentence, GameModeKey, HintKey, Timer, NotifType, NotifContent } from "./types"
 	import { pickRandomSentences } from "./pickSentences"
 	import { gameModes } from "./gameModes"
@@ -16,7 +16,6 @@
 	// State variables
 	let rawSentences
 	let timerInterval: number | undefined
-	let notification: NotifContent = { show: false, message: "", type: "info" }
 
 	// Lifecycle
 	onMount(async () => {
@@ -97,14 +96,6 @@
 			clearTimer()
 			updateGameState().gameOver()
 		}
-	}
-
-	// Notification
-	function showNotification(message: string, type: NotifType = "info") {
-		notification = { show: true, message, type }
-		setTimeout(() => {
-			notification = { show: false, message: "", type: "info" }
-		}, 500)
 	}
 
 	// Game logic
@@ -339,10 +330,10 @@
 			{validateOrder}
 			{nextSentence}
 		/>
-		{#if notification.show}
+		{#if $notification.show}
 			<Notification
-				message={notification.message}
-				type={notification.type}
+				message={$notification.message}
+				type={$notification.type}
 			/>
 		{/if}
 	{:else}
