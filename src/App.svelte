@@ -11,7 +11,7 @@
 	import Display from "./Display.svelte"
 	import type { DndEvent } from "svelte-dnd-action"
 	import Notification from "./Notification.svelte"
-	import { indexOfWord, swapElements } from "./utilityFunctions"
+	import { indexOfWord, swapElements } from "./utils"
 
 	// State variables
 	let rawSentences
