@@ -4,6 +4,7 @@ export type Sentence = {
 	id: number
 	current_sentence: string
 	words: Word[]
+	scrambledWords: Word[]
 	total_score: number
 	prev_sentences: SurroundingSentences[]
 	next_sentences: SurroundingSentences[]
@@ -61,14 +62,15 @@ export type GameModeKey = keyof typeof gameModes
 export interface GameState {
 	status: GameStatus
 	mode: GameModeKey
-	lives?: number
+	level: number
+	lives: number | null
 	hints: {
-		lock?: number
-		connect?: number
-		extraTime?: number
-		extraLife?: number
+		lock: number
+		connect: number
+		extraTime: number
+		extraLife: number
 	}
-	timeRemaining?: number
+	timeRemaining: number | null
 }
 
 export type HintKey = keyof GameMode["hintsWeight"]

@@ -21,7 +21,7 @@
 
 <div class="container">
 	<div class="paragraph-info">
-		<p>Level: {$currentSentence.id + 1}</p>
+		<p>Level: {$gameState.level}</p>
 		{#if gameModes[$gameState.mode].timer !== null}
 			<p>Time: {$gameState.timeRemaining}s</p>
 		{:else if $gameState.lives !== null}
@@ -32,7 +32,7 @@
 		<div class="paragraph">
 			<div
 				use:dndzone={{
-					items: $currentSentence.words,
+					items: $currentSentence.scrambledWords,
 					type: "word",
 					dragDisabled: false,
 				}}
@@ -40,7 +40,7 @@
 				on:finalize={e => onDragAndDrop(e, true)}
 				class="scrambled-words"
 			>
-				{#each $currentSentence.words as word (word.id)}
+				{#each $currentSentence.scrambledWords as word (word.id)}
 					<button
 						class="word-box"
 						class:selected={word.selected}

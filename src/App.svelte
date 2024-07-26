@@ -2,9 +2,9 @@
 	import "./app.css"
 	import { onMount } from "svelte"
 	import _ from "lodash"
-	import { gameState, updateGameState, currentSentence, sentences, notification, showNotification } from "./stores"
-	import type { Word, Sentence, GameModeKey, HintKey, Timer } from "./types"
-	import { pickRandomSentences } from "./pickSentences"
+	import { gameState, updateGameState, currentSentence, notification, showNotification } from "./stores"
+	import type { Word, Sentence, GameModeKey, HintKey, Timer, NotifType, NotifContent } from "./types"
+	import { selectSentence } from "./pickSentences"
 	import { gameModes } from "./gameModes"
 	import StartPage from "./StartPage.svelte"
 	import GameOverPage from "./GameOverPage.svelte"
@@ -16,6 +16,7 @@
 	// State variables
 	let rawSentences
 	let timerInterval: number | undefined
+	let nextSentence: Sentence | null = null
 
 	// Lifecycle
 	onMount(async () => {
@@ -38,14 +39,15 @@
 	}
 
 	// Game initialization
-	function initializeSentences() {
-		sentences.set(pickRandomSentences(rawSentences))
-		initSentence($sentences[0])
+	async function initializeSentences(mode: GameModeKey) {
+		const firstSentence = await selectSentence(rawSentences, 1, mode)
+		initSentence(firstSentence)
+		nextSentence = await selectSentence(rawSentences, 2, mode)
 	}
 
-	function initGame(mode: GameModeKey) {
+	async function initGame(mode: GameModeKey) {
+		await initializeSentences(mode)
 		updateGameState().reset(mode)
-		initializeSentences()
 		if (gameModes[mode].timer !== null) {
 			initTimer(true)
 		}
@@ -53,14 +55,14 @@
 
 	function restartGame() {
 		updateGameState().toStartingPage()
-		initializeSentences()
+		nextSentence = null
 		clearTimer()
 	}
 
 	function initSentence(sentence: Sentence): void {
 		currentSentence.set({
 			...sentence,
-			words: scrambleWords(sentence.words),
+			scrambledWords: scrambleWords(sentence.words),
 		})
 	}
 
@@ -85,7 +87,7 @@
 
 	function calculateNewTime(timerConfig: Timer, starting: boolean) {
 		if (timerConfig.resetOnNewLevel) {
-			return timerConfig.increment * (1 + Math.floor($currentSentence.id / 5))
+			return timerConfig.increment * (1 + Math.floor($gameState.level / 5))
 		}
 		return starting ? timerConfig.initial : $gameState.timeRemaining + timerConfig.increment
 	}
@@ -100,18 +102,19 @@
 
 	// Game logic
 	function getOriginalAndScrambledWords(): [Word[], Word[]] {
-		return [$sentences[$currentSentence.id].words, $currentSentence.words]
+		return [$currentSentence.words, $currentSentence.scrambledWords]
 	}
 
-	function nextSentence(): void {
-		const { id } = $currentSentence
-
-		if (id >= $sentences.length - 1) {
+	async function advanceToNextSentence(): Promise<void> {
+		if (nextSentence === null) {
 			updateGameState().gameOver()
 			return
 		}
 
-		initSentence($sentences[id + 1])
+		initSentence(nextSentence)
+		updateGameState().incrementLevel()
+		nextSentence = null
+		nextSentence = await selectSentence(rawSentences, $gameState.level + 1, $gameState.mode)
 		resetTimerForNextSentence()
 		randomHintChance()
 	}
@@ -130,7 +133,7 @@
 
 		if (wordsInCorrectPosition) {
 			showNotification("Correct!", "success")
-			nextSentence()
+			advanceToNextSentence()
 		} else if (gameModes[$gameState.mode].lives) {
 			updateGameState().updateLives(-1)
 			if (!gameModes[$gameState.mode].autoCheck) {
@@ -184,12 +187,12 @@
 	function onDragAndDropWrapper(e: CustomEvent<DndEvent<Word>>, isFinal: boolean): void {
 		const { items } = e.detail
 		const updatedWords = handleLockedWordsInDragAndDrop(items as Word[])
-		currentSentence.update(sentence => ({ ...sentence, words: updatedWords }))
+		currentSentence.update(sentence => ({ ...sentence, scrambledWords: updatedWords }))
 		if (isFinal && gameModes[$gameState.mode].autoCheck) validateOrder()
 	}
 
 	function handleLockedWordsInDragAndDrop(newWords: Word[]): Word[] {
-		const originalWords = $currentSentence.words
+		const originalWords = $currentSentence.scrambledWords
 		const updatedWords = [...newWords]
 
 		originalWords.forEach((word, index) => {
@@ -207,7 +210,7 @@
 	}
 
 	function onWordClick(wordId: number): void {
-		const words = $currentSentence.words
+		const words = $currentSentence.scrambledWords
 		const clickedWordIndex = indexOfWord(words, wordId)
 		const selectedWordIndex = words.findIndex(w => w.selected)
 
@@ -218,7 +221,7 @@
 			words.forEach(w => (w.selected = false))
 		}
 
-		currentSentence.update(sentence => ({ ...sentence, words }))
+		currentSentence.update(sentence => ({ ...sentence, scrambledWords: words }))
 		if (gameModes[$gameState.mode].autoCheck) validateOrder()
 	}
 
@@ -247,7 +250,7 @@
 		swapElements(scrambledWords, currentPosition, correctPosition)
 		scrambledWords[correctPosition].locked = true
 
-		currentSentence.update(sentence => ({ ...sentence, words: scrambledWords }))
+		currentSentence.update(sentence => ({ ...sentence, scrambledWords }))
 		updateGameState().updateHints("lock", -1)
 		if (gameModes[$gameState.mode].autoCheck) validateOrder()
 	}
@@ -273,7 +276,7 @@
 		scrambledWords[firstWordIndex].connectionRight = connectionColor
 		scrambledWords[secondWordIndex].connectionLeft = connectionColor
 
-		currentSentence.update(sentence => ({ ...sentence, words: scrambledWords }))
+		currentSentence.update(sentence => ({ ...sentence, scrambledWords }))
 		updateGameState().updateHints("connect", -1)
 	}
 
@@ -328,7 +331,7 @@
 			{lockWord}
 			{connectWords}
 			{validateOrder}
-			{nextSentence}
+			nextSentence={advanceToNextSentence}
 		/>
 		{#if $notification.show}
 			<Notification
@@ -338,7 +341,7 @@
 		{/if}
 	{:else}
 		<GameOverPage
-			finalLevel={$currentSentence.id + 1}
+			finalLevel={$gameState.level}
 			onRestart={restartGame}
 		/>
 	{/if}
