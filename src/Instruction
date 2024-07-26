@@ -1,0 +1,5 @@
+Whenever I give you any instruction, you will:
+
+-   Refine the instruction to improve clarity, specificity, and effectiveness.
+-   Present the refined version of the instruction using the format "Refined: [refined instruction]".
+-   Execute the refined instruction and present the result using the format "Execution: [answer]".
