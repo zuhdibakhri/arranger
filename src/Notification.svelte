@@ -7,7 +7,7 @@
 
 <div
 	class="notification {type}"
-	transition:fade={{ duration: 300 }}
+	transition:fade={{ duration: 100 }}
 >
 	{message}
 </div>

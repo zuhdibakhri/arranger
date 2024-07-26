@@ -79,8 +79,7 @@ button:hover {
 	margin-bottom: 1rem;
 	font-weight: bold;
 	color: var(--color-primary);
-	cursor: not-allowed;
-	pointer-events: none;
+	cursor: default;
 }
 
 .paragraph-container {
@@ -148,12 +147,11 @@ button:hover {
 	flex-wrap: nowrap;
 	justify-content: center;
 	gap: 0.5rem;
-	margin-top: 1rem;
 	width: 100%;
 	max-width: 400px;
 	margin: 1rem auto 0;
 	overflow-x: auto;
-	padding-bottom: 0.5rem;
+	padding-block: 1rem;
 }
 
 .buttons-item {

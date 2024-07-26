@@ -93,7 +93,7 @@
 		notification = { show: true, message, type }
 		setTimeout(() => {
 			notification = { show: false, message: "", type: "info" }
-		}, 3000)
+		}, 500)
 	}
 
 	function getOriginalAndScrambledWords(): [Word[], Word[]] {
