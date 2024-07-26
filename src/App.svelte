@@ -12,15 +12,19 @@
 	import type { DndEvent } from "svelte-dnd-action"
 	import Notification from "./Notification.svelte"
 
+	// State variables
 	let rawSentences
 	let timerInterval: number | undefined
+	let notification: NotifContent = { show: false, message: "", type: "info" }
 
+	// Lifecycle
 	onMount(async () => {
-		updateGameState().toStartingPage()
+		updateGameState().loading()
 		rawSentences = await fetchSentences()
-		initializeSentences()
+		updateGameState().toStartingPage()
 	})
 
+	// API
 	async function fetchSentences() {
 		try {
 			const response = await fetch(import.meta.env.VITE_API_URL)
@@ -33,6 +37,7 @@
 		}
 	}
 
+	// Game initialization
 	function initializeSentences() {
 		sentences.set(pickRandomSentences(rawSentences))
 		initSentence($sentences[0])
@@ -40,6 +45,7 @@
 
 	function initGame(mode: GameModeKey) {
 		updateGameState().reset(mode)
+		initializeSentences()
 		if (gameModes[mode].timer !== null) {
 			initTimer(true)
 		}
@@ -58,6 +64,7 @@
 		})
 	}
 
+	// Timer functions
 	function initTimer(starting: boolean = false) {
 		clearTimer()
 
@@ -91,8 +98,7 @@
 		}
 	}
 
-	let notification = { show: false, message: "", type: "info" } as NotifContent
-
+	// Notification
 	function showNotification(message: string, type: NotifType = "info") {
 		notification = { show: true, message, type }
 		setTimeout(() => {
@@ -100,6 +106,7 @@
 		}, 500)
 	}
 
+	// Game logic
 	function getOriginalAndScrambledWords(): [Word[], Word[]] {
 		return [$sentences[$currentSentence.id].words, $currentSentence.words]
 	}
@@ -140,38 +147,48 @@
 		}
 	}
 
-	export function randomHintChance(): void {
+	function randomHintChance(): void {
 		const currentMode = gameModes[$gameState.mode as GameModeKey]
-
-		const availableHints = Object.entries(currentMode.hintsWeight)
-			.filter(([_, weight]) => weight !== null)
-			.map(([hintType, weight]) => ({ hintType, weight: weight as number }))
+		const availableHints = getAvailableHints(currentMode)
 
 		if (availableHints.length === 0) return
 
+		const selectedHint = selectRandomHint(availableHints)
+
+		if (selectedHint) {
+			applySelectedHint(selectedHint)
+		}
+	}
+
+	function getAvailableHints(currentMode) {
+		return Object.entries(currentMode.hintsWeight)
+			.filter(([_, weight]) => weight !== null)
+			.map(([hintType, weight]) => ({ hintType, weight: weight as number }))
+	}
+
+	function selectRandomHint(availableHints) {
 		const totalWeight = availableHints.reduce((sum, hint) => sum + hint.weight, 0)
 		let randomValue = Math.random() * totalWeight
 
-		let selectedHint: HintKey
 		for (const { hintType, weight } of availableHints) {
 			randomValue -= weight
 			if (randomValue <= 0) {
-				selectedHint = hintType as HintKey
-				break
-			}
-		}
-
-		if (selectedHint) {
-			if (selectedHint === "extraLife") {
-				updateGameState().updateLives(1)
-				showNotification("+1 life", "info")
-			} else {
-				updateGameState().updateHints(selectedHint, 1)
-				showNotification(`+1 hint: ${selectedHint}`, "info")
+				return hintType as HintKey
 			}
 		}
 	}
 
+	function applySelectedHint(selectedHint: HintKey) {
+		if (selectedHint === "extraLife") {
+			updateGameState().updateLives(1)
+			showNotification("+1 life", "info")
+		} else {
+			updateGameState().updateHints(selectedHint, 1)
+			showNotification(`+1 hint: ${selectedHint}`, "info")
+		}
+	}
+
+	// Utility functions
 	export function swapElements<T>(arr: T[], index1: number, index2: number): void {
 		;[arr[index1], arr[index2]] = [arr[index2], arr[index1]]
 	}
@@ -180,6 +197,7 @@
 		return words.findIndex(word => (typeof target === "number" ? word.id === target : word.token === target))
 	}
 
+	// Event handlers
 	function onDragAndDropWrapper(e: CustomEvent<DndEvent<Word>>, isFinal: boolean): void {
 		const { items } = e.detail
 		const updatedWords = handleLockedWordsInDragAndDrop(items as Word[])
@@ -221,6 +239,7 @@
 		if (gameModes[$gameState.mode].autoCheck) validateOrder()
 	}
 
+	// Word manipulation functions
 	function scrambleWords(words: Word[]): Word[] {
 		const unlockedWords = words.filter(word => !word.locked)
 		let shuffledWords = words
@@ -255,6 +274,24 @@
 			const correctPosition = indexOfWord(originalWords, word.id)
 			return !word.locked && index !== correctPosition
 		})
+	}
+
+	function connectWords(): void {
+		const [originalWords, scrambledWords] = getOriginalAndScrambledWords()
+		const availableConnections = findAvailableConnections(originalWords, scrambledWords)
+
+		if (availableConnections.length === 0) return
+
+		const { firstWord, secondWord } = _.sample(availableConnections)
+		const connectionColor = `#${_.padStart(_.random(0x1000000).toString(16), 6, "0")}`
+		const firstWordIndex = indexOfWord(scrambledWords, firstWord.id)
+		const secondWordIndex = indexOfWord(scrambledWords, secondWord.id)
+
+		scrambledWords[firstWordIndex].connectionRight = connectionColor
+		scrambledWords[secondWordIndex].connectionLeft = connectionColor
+
+		currentSentence.update(sentence => ({ ...sentence, words: scrambledWords }))
+		updateGameState().updateHints("connect", -1)
 	}
 
 	function findAvailableConnections(
@@ -292,28 +329,10 @@
 			alreadyHaveConflictingConnection
 		)
 	}
-
-	function connectWords(): void {
-		const [originalWords, scrambledWords] = getOriginalAndScrambledWords()
-		const availableConnections = findAvailableConnections(originalWords, scrambledWords)
-
-		if (availableConnections.length === 0) return
-
-		const { firstWord, secondWord } = _.sample(availableConnections)
-		const connectionColor = `#${_.padStart(_.random(0x1000000).toString(16), 6, "0")}`
-		const firstWordIndex = indexOfWord(scrambledWords, firstWord.id)
-		const secondWordIndex = indexOfWord(scrambledWords, secondWord.id)
-
-		scrambledWords[firstWordIndex].connectionRight = connectionColor
-		scrambledWords[secondWordIndex].connectionLeft = connectionColor
-
-		currentSentence.update(sentence => ({ ...sentence, words: scrambledWords }))
-		updateGameState().updateHints("connect", -1)
-	}
 </script>
 
 <main>
-	{#if $sentences.length === 0}
+	{#if $gameState.status === "loading"}
 		<div class="loading">
 			<p>Loading...</p>
 		</div>

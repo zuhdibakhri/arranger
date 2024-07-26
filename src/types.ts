@@ -36,7 +36,7 @@ export interface CustomDndEvent extends CustomEvent {
 	}
 }
 
-export type GameStatus = "start" | "playing" | "over"
+export type GameStatus = "loading" | "start" | "playing" | "over"
 export type Timer = {
 	initial: number
 	resetOnNewLevel: boolean

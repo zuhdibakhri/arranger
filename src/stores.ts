@@ -3,13 +3,28 @@ import { get } from "svelte/store"
 import type { GameState, Sentence, GameModeKey, HintKey } from "./types"
 import { gameModes } from "./gameModes"
 
-export const gameState = writable<GameState>()
+export const gameState = writable<GameState>({
+	status: "loading",
+	mode: "default",
+	lives: null,
+	hints: {
+		lock: 0,
+		connect: 0,
+		extraTime: 0,
+		extraLife: 0,
+	},
+	timeRemaining: null,
+})
 
 export function updateGameState() {
 	const state = get(gameState)
 
 	function toStartingPage() {
 		gameState.set({ ...state, status: "start" })
+	}
+
+	function loading() {
+		gameState.set({ ...state, status: "loading" })
 	}
 
 	function reset(mode: GameModeKey) {
@@ -68,6 +83,7 @@ export function updateGameState() {
 
 	return {
 		toStartingPage,
+		loading,
 		reset,
 		updateHints,
 		updateLives,
