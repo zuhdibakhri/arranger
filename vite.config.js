@@ -5,16 +5,12 @@ export default defineConfig({
 	plugins: [svelte()],
 	base: "/arranger/",
 	define: {
-		"import.meta.env.VITE_API_URL": JSON.stringify(
-			process.env.NODE_ENV === "production"
-				? "https://zuhdibakhri-arranger.s3.ap-southeast-2.amazonaws.com/SENTENCES.json"
-				: "/api/SENTENCES.json"
-		),
+		"import.meta.env.VITE_API_URL": JSON.stringify("http://localhost:3000/sentences"),
 	},
 	server: {
 		proxy: {
 			"/api": {
-				target: "https://zuhdibakhri-arranger.s3.ap-southeast-2.amazonaws.com",
+				target: "http://localhost:3000",
 				changeOrigin: true,
 				rewrite: path => path.replace(/^\/api/, ""),
 			},

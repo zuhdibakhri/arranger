@@ -4,8 +4,9 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
+		"dev": "concurrently \"vite\" \"node src/server.js\"",
 		"build": "vite build",
+		"serve": "vite preview",
 		"preview": "vite preview",
 		"deploy": "npm run build && npx gh-pages -d dist"
 	},
@@ -19,8 +20,13 @@
 		"vite": "^5.3.1"
 	},
 	"dependencies": {
+		"concurrently": "^8.2.2",
+		"cors": "^2.8.5",
+		"dotenv": "^16.4.5",
+		"express": "^4.19.2",
 		"lodash": "^4.17.21",
 		"mysql2": "^3.10.3",
-		"svelte-dnd-action": "^0.9.49"
+		"svelte-dnd-action": "^0.9.49",
+		"ts-node": "^10.9.2"
 	}
 }
