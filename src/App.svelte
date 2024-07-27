@@ -10,7 +10,7 @@
 		showNotification,
 		isLoadingNextSentence,
 	} from "./stores"
-	import type { Word, Sentence, GameModeKey, HintKey, Timer } from "./types"
+	import type { Word, Sentence, GameModeKey, HintKey } from "./types"
 	import { selectSentence } from "./pickSentences"
 	import { gameModes } from "./gameModes"
 	import StartPage from "./StartPage.svelte"
@@ -19,7 +19,7 @@
 	import type { DndEvent } from "svelte-dnd-action"
 	import Notification from "./Notification.svelte"
 	import { indexOfWord, swapElements } from "./utils"
-	import { setupGameTimer, stopGameTimer, resetTimerForNextSentence } from "./timer"
+	import { setupGameTimer, stopGameTimer, resetTimerForNextSentence } from "./gameTimer"
 
 	let gameTimerInterval: number | undefined
 	let nextSentence: Sentence | null = null
