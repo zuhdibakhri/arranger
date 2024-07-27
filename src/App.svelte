@@ -2,7 +2,14 @@
 	import "./app.css"
 	import { onMount } from "svelte"
 	import _ from "lodash"
-	import { gameState, updateGameState, currentSentence, notification, showNotification } from "./stores"
+	import {
+		gameState,
+		updateGameState,
+		currentSentence,
+		notification,
+		showNotification,
+		isLoadingNextSentence,
+	} from "./stores"
 	import type { Word, Sentence, GameModeKey, HintKey, Timer } from "./types"
 	import { selectSentence } from "./pickSentences"
 	import { gameModes } from "./gameModes"
@@ -82,17 +89,22 @@
 	}
 
 	async function advanceToNextSentence(): Promise<void> {
-		if (nextSentence === null) {
-			updateGameState().gameOver()
-			return
+		isLoadingNextSentence.set(true)
+		updateGameState().setStatus("loading")
+
+		while (nextSentence === null) {
+			await new Promise(resolve => setTimeout(resolve, 100)) // Wait for 100ms
 		}
+
+		isLoadingNextSentence.set(false)
+		updateGameState().setStatus("playing")
 
 		initializeAndScrambleSentence(nextSentence)
 		updateGameState().incrementLevel()
+		addRandomHint()
 		nextSentence = null
 		nextSentence = await selectSentence($gameState.level + 1)
 		resetTimerForNextSentence()
-		addRandomHint()
 	}
 
 	function resetTimerForNextSentence() {
@@ -280,7 +292,7 @@
 </script>
 
 <main>
-	{#if $gameState.status === "loading"}
+	{#if $gameState.status === "loading" || $isLoadingNextSentence}
 		<div class="loading">
 			<p>Loading...</p>
 		</div>

@@ -69,6 +69,7 @@ async function fetchSentencesFromAPI(minScore: number, maxScore: number): Promis
 }
 
 export async function selectSentence(level: number): Promise<Sentence | null> {
+	console.log("Selecting sentence for level", level)
 	const mode = get(gameState).mode
 	const gameMode = gameModes[mode]
 	const { min, max } = getScoreRange(level, gameMode.constantScoreRange)

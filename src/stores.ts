@@ -113,6 +113,7 @@ export function updateGameState() {
 }
 
 export const currentSentence = writable<Sentence | null>(null)
+export const isLoadingNextSentence = writable<boolean>(false)
 
 export const notification = writable<NotifContent>({ show: false, message: "", type: "info" })
 
