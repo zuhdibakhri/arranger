@@ -63,7 +63,8 @@
 
 			{#if sentenceTranslation}
 				<div class="sentence-translation">
-					{sentenceTranslation}
+					<span>Translation:</span>
+					({sentenceTranslation.trim()})
 				</div>
 			{/if}
 		</div>
