@@ -176,14 +176,8 @@
 	// Event handlers
 	function handleWordDrag(e: CustomEvent<DndEvent<Word>>, isFinal: boolean): void {
 		const { items } = e.detail
-		const updatedWords = handleLockedWordsInDragAndDrop(items as Word[])
-		currentSentence.update(sentence => ({ ...sentence, scrambledWords: updatedWords }))
-		if (isFinal && gameModes[$gameState.mode].autoCheck) checkWordOrder()
-	}
-
-	function handleLockedWordsInDragAndDrop(newWords: Word[]): Word[] {
 		const originalWords = $currentSentence.scrambledWords
-		const updatedWords = [...newWords]
+		const updatedWords = [...items]
 
 		originalWords.forEach((word, index) => {
 			if (word.locked) {
@@ -195,8 +189,8 @@
 				}
 			}
 		})
-
-		return updatedWords
+		currentSentence.update(sentence => ({ ...sentence, scrambledWords: updatedWords }))
+		if (isFinal && gameModes[$gameState.mode].autoCheck) checkWordOrder()
 	}
 
 	function handleWordSelection(wordId: number): void {
