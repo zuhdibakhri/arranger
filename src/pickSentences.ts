@@ -69,12 +69,11 @@ async function fetchSentencesFromAPI(minScore: number, maxScore: number): Promis
 }
 
 export async function selectSentence(level: number): Promise<Sentence | null> {
-	console.log("Selecting sentence for level", level)
 	const mode = get(gameState).mode
 	const gameMode = gameModes[mode]
 	const { min, max } = getScoreRange(level, gameMode.constantScoreRange)
 
-	const eligibleSentences = await fetchSentencesFromAPI(min, max)
+	const eligibleSentences = await (await fetchSentencesFromAPI(min, max)).filter(isValidSentence)
 
 	if (eligibleSentences.length === 0) {
 		console.warn(`No eligible sentences found for level ${level} and score range ${min}-${max}`)

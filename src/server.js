@@ -11,11 +11,11 @@ app.get("/sentences", async (req, res) => {
 	try {
 		const { minScore, maxScore } = req.query
 
-		// Fetch sentences within the specified score range
 		const [sentencesRows] = await pool.query(
 			`
             SELECT * FROM sentences 
             WHERE total_score BETWEEN ? AND ?
+			ORDER BY RAND() LIMIT 1000
         `,
 			[minScore, maxScore]
 		)
