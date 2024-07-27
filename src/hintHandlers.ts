@@ -47,7 +47,10 @@ export function lockRandomWord(): void {
 	const [originalWords, scrambledWords] = [$currentSentence.words, $currentSentence.scrambledWords]
 	const wordsNotInCorrectPosition = getWordsNotInCorrectPosition(originalWords, scrambledWords)
 
-	if (wordsNotInCorrectPosition.length === 0) return
+	if (wordsNotInCorrectPosition.length === 0) {
+		showNotification("No valid lock available", "error")
+		return
+	}
 
 	const randomWord = _.sample(wordsNotInCorrectPosition)
 	const correctPosition = originalWords.findIndex(w => w.token === randomWord.token && !w.locked)
@@ -72,7 +75,10 @@ export function connectRandomWords(): void {
 	const [originalWords, scrambledWords] = [$currentSentence.words, $currentSentence.scrambledWords]
 	const availableConnections = findAvailableConnections(originalWords, scrambledWords)
 
-	if (availableConnections.length === 0) return
+	if (availableConnections.length === 0) {
+		showNotification("No valid connection available", "error")
+		return
+	}
 
 	const { firstWord, secondWord } = _.sample(availableConnections)
 	const connectionColor = `#${_.padStart(_.random(0x1000000).toString(16), 6, "0")}`

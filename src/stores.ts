@@ -123,5 +123,5 @@ export function showNotification(message: string, type: NotifType = "info") {
 	notification.set({ show: true, message, type })
 	setTimeout(() => {
 		notification.set({ show: false, message: "", type: "info" })
-	}, 500)
+	}, 1000)
 }
