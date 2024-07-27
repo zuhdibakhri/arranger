@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { dndzone } from "svelte-dnd-action"
-	import { gameState, currentSentence } from "./stores"
+	import { gameState, currentSentence, sentenceTranslation } from "./stores"
 	import { gameModes } from "./gameModes"
 	import ButtonGroup from "./ButtonGroup.svelte"
 	import { handleWordDrag, handleWordSelection } from "./wordEventHandlers"
@@ -11,7 +11,6 @@
 	export let advanceToNextSentence: () => void
 	export let scrambleWords: () => void
 	export let getTranslation: () => void
-	export let sentenceTranslation: string
 
 	$: combinedParagraph =
 		$currentSentence.prev_sentences.map(s => s.sentence).join(" ") +
@@ -61,10 +60,10 @@
 				{combinedParagraph}
 			</div>
 
-			{#if sentenceTranslation}
+			{#if $sentenceTranslation}
 				<div class="sentence-translation">
 					<span>Translation:</span>
-					({sentenceTranslation.trim()})
+					({$sentenceTranslation.trim()})
 				</div>
 			{/if}
 		</div>
@@ -76,6 +75,6 @@
 		{advanceToNextSentence}
 		{scrambleWords}
 		{getTranslation}
-		isTranslated={sentenceTranslation !== ""}
+		isTranslated={$sentenceTranslation !== ""}
 	/>
 </div>

@@ -17,6 +17,7 @@
 		notification,
 		showNotification,
 		updateGameState,
+		sentenceTranslation,
 	} from "./stores"
 	import type { GameModeKey, Sentence, Word } from "./types"
 
@@ -25,7 +26,6 @@
 	import "./app.css"
 
 	let nextSentence: Sentence | null = null
-	let sentenceTranslation = ""
 	const TRANSLATION_LANGUAGE = "Indonesian"
 
 	onMount(() => {
@@ -73,7 +73,7 @@
 		isLoadingNextSentence.set(false)
 		updateGameState().setStatus("playing")
 
-		sentenceTranslation = ""
+		sentenceTranslation.set("")
 		initializeAndScrambleSentence(nextSentence)
 		updateGameState().incrementLevel()
 		addRandomHint()
@@ -109,7 +109,7 @@
 	}
 
 	async function handleTranslation() {
-		sentenceTranslation = await getTranslation(TRANSLATION_LANGUAGE)
+		sentenceTranslation.set(await getTranslation(TRANSLATION_LANGUAGE))
 	}
 </script>
 
@@ -128,7 +128,6 @@
 			{advanceToNextSentence}
 			scrambleWords={() => initializeAndScrambleSentence($currentSentence)}
 			getTranslation={handleTranslation}
-			{sentenceTranslation}
 		/>
 		{#if $notification.show}
 			<Notification
