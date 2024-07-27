@@ -4,12 +4,12 @@
 	import { gameModes } from "./gameModes"
 	import ButtonGroup from "./ButtonGroup.svelte"
 
-	export let onDragAndDrop: (e: any, isFinal: boolean) => void
-	export let onWordClick: (wordId: number) => void
-	export let lockWord: () => void
-	export let connectWords: () => void
-	export let validateOrder: () => void
-	export let nextSentence: () => void
+	export let handleWordDrag: (e: any, isFinal: boolean) => void
+	export let handleWordSelection: (wordId: number) => void
+	export let lockRandomWord: () => void
+	export let connectRandomWords: () => void
+	export let checkWordOrder: () => void
+	export let advanceToNextSentence: () => void
 
 	$: combinedParagraph =
 		$currentSentence.prev_sentences.map(s => s.sentence).join(" ") +
@@ -36,8 +36,8 @@
 					type: "word",
 					dragDisabled: false,
 				}}
-				on:consider={e => onDragAndDrop(e, false)}
-				on:finalize={e => onDragAndDrop(e, true)}
+				on:consider={e => handleWordDrag(e, false)}
+				on:finalize={e => handleWordDrag(e, true)}
 				class="scrambled-words"
 			>
 				{#each $currentSentence.scrambledWords as word (word.id)}
@@ -47,7 +47,7 @@
 						class:locked={word.locked}
 						style="border-left-color: {word.connectionLeft ||
 							'transparent'}; border-right-color: {word.connectionRight || 'transparent'};"
-						on:click={() => onWordClick(word.id)}
+						on:click={() => handleWordSelection(word.id)}
 						draggable={!word.locked}
 					>
 						{word.token}
@@ -61,9 +61,9 @@
 		</div>
 	</div>
 	<ButtonGroup
-		{lockWord}
-		{connectWords}
-		{validateOrder}
-		{nextSentence}
+		{lockRandomWord}
+		{connectRandomWords}
+		{checkWordOrder}
+		{advanceToNextSentence}
 	/>
 </div>

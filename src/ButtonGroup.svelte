@@ -2,10 +2,10 @@
 	import { gameState, updateGameState } from "./stores"
 	import { gameModes } from "./gameModes"
 
-	export let lockWord: () => void
-	export let connectWords: () => void
-	export let nextSentence: () => void
-	export let validateOrder: () => void
+	export let lockRandomWord: () => void
+	export let connectRandomWords: () => void
+	export let advanceToNextSentence: () => void
+	export let checkWordOrder: () => void
 
 	const EXTRA_TIME_DURATION = 15
 	const testMode = true
@@ -14,7 +14,7 @@
 <div class="buttons">
 	<button
 		class="buttons-item"
-		on:click={lockWord}
+		on:click={lockRandomWord}
 		disabled={$gameState.hints.lock === 0}
 		title="Lock"
 	>
@@ -23,7 +23,7 @@
 	</button>
 	<button
 		class="buttons-item"
-		on:click={connectWords}
+		on:click={connectRandomWords}
 		disabled={$gameState.hints.connect === 0}
 		title="Connect"
 	>
@@ -47,7 +47,7 @@
 	{#if !gameModes[$gameState.mode].autoCheck}
 		<button
 			class="buttons-item"
-			on:click={validateOrder}
+			on:click={checkWordOrder}
 			title="Check"
 		>
 			<i class="fas fa-check"></i>
@@ -56,7 +56,7 @@
 	{#if testMode}
 		<button
 			class="buttons-item"
-			on:click={nextSentence}
+			on:click={advanceToNextSentence}
 			title="Next"
 		>
 			<i class="fas fa-arrow-right"></i>
