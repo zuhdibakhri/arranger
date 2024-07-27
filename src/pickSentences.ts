@@ -60,15 +60,20 @@ function getScoreRange(level: number, constantScoreRange: boolean): { min: numbe
 	}
 }
 
-export async function selectSentence(rawSentences: Sentence[], level: number): Promise<Sentence | null> {
+async function fetchSentencesFromAPI(minScore: number, maxScore: number): Promise<Sentence[]> {
+	const response = await fetch(`${import.meta.env.VITE_API_URL}?minScore=${minScore}&maxScore=${maxScore}`)
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`)
+	}
+	return await response.json()
+}
+
+export async function selectSentence(level: number): Promise<Sentence | null> {
 	const mode = get(gameState).mode
-	const validSentences = rawSentences.filter(isValidSentence)
 	const gameMode = gameModes[mode]
 	const { min, max } = getScoreRange(level, gameMode.constantScoreRange)
 
-	const eligibleSentences = validSentences.filter(
-		sentence => sentence.total_score >= min && sentence.total_score <= max
-	)
+	const eligibleSentences = await fetchSentencesFromAPI(min, max)
 
 	if (eligibleSentences.length === 0) {
 		console.warn(`No eligible sentences found for level ${level} and score range ${min}-${max}`)

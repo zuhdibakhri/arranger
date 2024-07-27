@@ -13,32 +13,17 @@
 	import Notification from "./Notification.svelte"
 	import { indexOfWord, swapElements } from "./utils"
 
-	let allSentences
 	let gameTimerInterval: number | undefined
 	let nextSentence: Sentence | null = null
 
-	onMount(async () => {
-		updateGameState().setStatus("loading")
-		allSentences = await loadSentencesFromAPI()
+	onMount(() => {
 		updateGameState().setStatus("start")
 	})
 
-	async function loadSentencesFromAPI() {
-		try {
-			const response = await fetch(import.meta.env.VITE_API_URL)
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`)
-			}
-			return await response.json()
-		} catch (error) {
-			throw error
-		}
-	}
-
 	async function prepareGameSentences() {
-		const firstSentence = await selectSentence(allSentences, 1)
+		const firstSentence = await selectSentence(1)
 		initializeAndScrambleSentence(firstSentence)
-		nextSentence = await selectSentence(allSentences, 2)
+		nextSentence = await selectSentence(2)
 	}
 
 	async function startNewGame(mode: GameModeKey) {
@@ -105,7 +90,7 @@
 		initializeAndScrambleSentence(nextSentence)
 		updateGameState().incrementLevel()
 		nextSentence = null
-		nextSentence = await selectSentence(allSentences, $gameState.level + 1)
+		nextSentence = await selectSentence($gameState.level + 1)
 		resetTimerForNextSentence()
 		addRandomHint()
 	}
