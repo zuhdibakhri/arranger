@@ -8,7 +8,7 @@
 
 	import { gameModes } from "./gameModes"
 	import { resetTimerForNextSentence, setupGameTimer, stopGameTimer } from "./gameTimer"
-	import { addRandomHint, connectRandomWords, lockRandomWord } from "./hintHandlers"
+	import { addRandomHint, connectRandomWords, lockRandomWord, getTranslation } from "./hintHandlers"
 	import { selectSentence } from "./pickSentences"
 	import {
 		currentSentence,
@@ -25,6 +25,8 @@
 	import "./app.css"
 
 	let nextSentence: Sentence | null = null
+	let sentenceTranslation = ""
+	const TRANSLATION_LANGUAGE = "Indonesian"
 
 	onMount(() => {
 		updateGameState().setStatus("start")
@@ -71,6 +73,7 @@
 		isLoadingNextSentence.set(false)
 		updateGameState().setStatus("playing")
 
+		sentenceTranslation = ""
 		initializeAndScrambleSentence(nextSentence)
 		updateGameState().incrementLevel()
 		addRandomHint()
@@ -104,6 +107,10 @@
 		}
 		return shuffledWords
 	}
+
+	async function handleTranslation() {
+		sentenceTranslation = await getTranslation(TRANSLATION_LANGUAGE)
+	}
 </script>
 
 <main>
@@ -120,6 +127,8 @@
 			{checkWordOrder}
 			{advanceToNextSentence}
 			scrambleWords={() => initializeAndScrambleSentence($currentSentence)}
+			getTranslation={handleTranslation}
+			{sentenceTranslation}
 		/>
 		{#if $notification.show}
 			<Notification

@@ -13,6 +13,7 @@ export const gameState = writable<GameState>({
 		connect: null,
 		extraTime: null,
 		extraLife: null,
+		translate: null,
 	},
 	timeRemaining: null,
 })

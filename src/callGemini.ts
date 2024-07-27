@@ -1,9 +1,6 @@
-import * as dotenv from "dotenv"
-const { GoogleGenerativeAI } = require("@google/generative-ai")
+import { GoogleGenerativeAI } from "@google/generative-ai"
 
-dotenv.config()
-
-const GOOGLE_API_KEY: string = process.env.GOOGLE_API_KEY as string
+const GOOGLE_API_KEY: string = import.meta.env.VITE_GOOGLE_API_KEY as string
 
 export interface ModelParameters {
 	model: string

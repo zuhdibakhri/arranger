@@ -51,6 +51,7 @@ export interface GameMode {
 		connect: number | null
 		extraTime: number | null
 		extraLife: number | null
+		translate: number | null
 	}
 	autoCheck: boolean
 	lives: number | null
@@ -69,6 +70,7 @@ export interface GameState {
 		connect: number
 		extraTime: number
 		extraLife: number
+		translate: number
 	}
 	timeRemaining: number | null
 }

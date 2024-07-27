@@ -10,6 +10,8 @@
 	export let checkWordOrder: () => void
 	export let advanceToNextSentence: () => void
 	export let scrambleWords: () => void
+	export let getTranslation: () => void
+	export let sentenceTranslation: string
 
 	$: combinedParagraph =
 		$currentSentence.prev_sentences.map(s => s.sentence).join(" ") +
@@ -58,6 +60,12 @@
 			<div class="combined-paragraph">
 				{combinedParagraph}
 			</div>
+
+			{#if sentenceTranslation}
+				<div class="sentence-translation">
+					{sentenceTranslation}
+				</div>
+			{/if}
 		</div>
 	</div>
 	<ButtonGroup
@@ -66,5 +74,6 @@
 		{checkWordOrder}
 		{advanceToNextSentence}
 		{scrambleWords}
+		{getTranslation}
 	/>
 </div>

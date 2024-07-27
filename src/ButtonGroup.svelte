@@ -7,6 +7,7 @@
 	export let advanceToNextSentence: () => void
 	export let checkWordOrder: () => void
 	export let scrambleWords: () => void
+	export let getTranslation: () => void
 
 	const EXTRA_TIME_DURATION = 15
 	const testMode = true
@@ -45,6 +46,15 @@
 			<span class="hint-count">[{$gameState.hints.extraTime}]</span>
 		</button>
 	{/if}
+	<button
+		class="buttons-item"
+		on:click={getTranslation}
+		disabled={$gameState.hints.translate === 0}
+		title="Translate"
+	>
+		<i class="fas fa-language"></i>
+		<span class="hint-count">[{$gameState.hints.translate}]</span>
+	</button>
 	{#if !gameModes[$gameState.mode].autoCheck}
 		<button
 			class="buttons-item"

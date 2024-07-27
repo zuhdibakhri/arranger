@@ -4,6 +4,7 @@ import { currentSentence, gameState, updateGameState, showNotification } from ".
 import type { Word, HintKey } from "./types"
 import { indexOfWord, swapElements } from "./utils"
 import { gameModes } from "./gameModes"
+import translateSentence from "./translateSentence"
 
 export function addRandomHint(): void {
 	const state = get(gameState)
@@ -116,4 +117,10 @@ function isValidConnection(firstWord: Word, secondWord: Word, originalWords: Wor
 		areAlreadyNeighbors ||
 		alreadyHaveConflictingConnection
 	)
+}
+
+export async function getTranslation(language: string): Promise<string | null> {
+	let sentenceTranslation
+	updateGameState().updateHints("translate", -1)
+	return (sentenceTranslation = await translateSentence(get(currentSentence).current_sentence, language))
 }
