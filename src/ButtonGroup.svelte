@@ -8,7 +8,7 @@
 	export let checkWordOrder: () => void
 
 	const EXTRA_TIME_DURATION = 15
-	const testMode = false
+	const testMode = true
 </script>
 
 <div class="buttons">

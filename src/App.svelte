@@ -259,10 +259,12 @@
 		scrambledWords: Word[]
 	): { firstWord: Word; secondWord: Word }[] {
 		return originalWords
-			.filter(word => word.id !== originalWords.length - 1)
+			.filter(word => {
+				return indexOfWord(originalWords, word.id) !== originalWords.length - 1
+			})
 			.map(word => ({
 				firstWord: word,
-				secondWord: originalWords[word.id + 1],
+				secondWord: originalWords[indexOfWord(originalWords, word.id) + 1],
 			}))
 			.filter(({ firstWord, secondWord }) =>
 				isValidConnection(firstWord, secondWord, originalWords, scrambledWords)
@@ -275,12 +277,14 @@
 		originalWords: Word[],
 		scrambledWords: Word[]
 	): boolean {
+		const firstWordIndex = indexOfWord(originalWords, firstWord.id)
+		const secondWordIndex = indexOfWord(originalWords, secondWord.id)
 		const areAlreadyNeighbors =
-			scrambledWords[firstWord.id + 1].token === secondWord.token ||
-			scrambledWords[secondWord.id - 1].token === firstWord.token
+			scrambledWords[firstWordIndex + 1].token === secondWord.token ||
+			scrambledWords[secondWordIndex - 1].token === firstWord.token
 		const alreadyHaveConflictingConnection =
-			(firstWord.connectionLeft && originalWords[firstWord.id - 1] !== originalWords[secondWord.id - 2]) ||
-			(secondWord.connectionRight && originalWords[secondWord.id + 1] !== originalWords[firstWord.id + 2])
+			(firstWord.connectionLeft && originalWords[firstWordIndex - 1] !== originalWords[secondWordIndex - 2]) ||
+			(secondWord.connectionRight && originalWords[secondWordIndex + 1] !== originalWords[firstWordIndex + 2])
 
 		return !(
 			firstWord.connectionRight ||
