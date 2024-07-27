@@ -1,4 +1,4 @@
-import type { Sentence } from "./types"
+import type { Word, Sentence } from "./types"
 import { get } from "svelte/store"
 import { gameState } from "./stores"
 import { gameModes } from "./gameModes"
@@ -12,23 +12,19 @@ const PROGRESSIVE_INCREMENT = 5
 const LEVELS_PER_INCREMENT = 5
 
 function enhanceSentenceWithGameProperties(sentence: Sentence, id: number): Sentence {
+	const resetWordProperties = (word: Word) => ({
+		...word,
+		selected: false,
+		locked: false,
+		connectionLeft: "",
+		connectionRight: "",
+	})
+
 	return {
 		...sentence,
 		id,
-		words: sentence.words.map(word => ({
-			...word,
-			selected: false,
-			locked: false,
-			connectionLeft: "",
-			connectionRight: "",
-		})),
-		scrambledWords: sentence.words.map(word => ({
-			...word,
-			selected: false,
-			locked: false,
-			connectionLeft: "",
-			connectionRight: "",
-		})),
+		words: sentence.words.map(resetWordProperties),
+		scrambledWords: sentence.words.map(resetWordProperties),
 	}
 }
 
