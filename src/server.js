@@ -9,15 +9,26 @@ app.use(cors())
 
 app.get("/sentences", async (req, res) => {
 	try {
-		const { minScore, maxScore } = req.query
+		const { minScore, maxScore, maxWordScore = 10 } = req.query
 
 		const [sentencesRows] = await pool.query(
 			`
-            SELECT * FROM sentences 
-            WHERE total_score BETWEEN ? AND ?
-			ORDER BY RAND() LIMIT 1000
-        `,
-			[minScore, maxScore]
+            SELECT s.*,
+			GROUP_CONCAT(DISTINCT w.word) AS words,
+			AVG(related.total_score) AS avg_related_score
+			FROM sentences s
+			JOIN words w ON s.id = w.sentence_id
+			LEFT JOIN sentence_relations sr ON s.id = sr.main_sentence_id
+			LEFT JOIN sentences related ON sr.related_sentence_id = related.id
+			WHERE s.total_score BETWEEN ? AND ?
+			GROUP BY s.id
+			HAVING MAX(w.score) <= ?
+			AND s.total_score >= avg_related_score
+			AND (LENGTH(words) - LENGTH(REPLACE(words, ',', '')) + 1) >= 4
+			ORDER BY RAND()
+			LIMIT 1000
+            `,
+			[minScore, maxScore, maxWordScore]
 		)
 
 		const sentences = /** @type {Array<{id: number, current_sentence: string, total_score: number}>} */ (
@@ -25,11 +36,9 @@ app.get("/sentences", async (req, res) => {
 		)
 
 		if (sentences.length === 0) {
-			// If no sentences are found, return an empty array
 			return res.json([])
 		}
 
-		// Fetch words for all sentences
 		const sentenceIds = sentences.map(s => s.id)
 		const [wordsRows] = await pool.query(
 			`
@@ -43,7 +52,6 @@ app.get("/sentences", async (req, res) => {
 				wordsRows
 			)
 
-		// Fetch sentence relations for all sentences
 		const [relationsRows] = await pool.query(
 			`
             SELECT sr.*, s.current_sentence, s.total_score 
@@ -59,7 +67,6 @@ app.get("/sentences", async (req, res) => {
 				relationsRows
 			)
 
-		// Process and structure the data
 		const processedSentences = sentences.map(sentence => {
 			const sentenceWords = words.filter(w => w.sentence_id === sentence.id)
 			const prevSentences = relations

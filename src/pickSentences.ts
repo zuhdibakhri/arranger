@@ -11,19 +11,6 @@ const PROGRESSIVE_BASE_MAX = 10
 const PROGRESSIVE_INCREMENT = 5
 const LEVELS_PER_INCREMENT = 5
 
-function isValidSentence(sentence: Sentence): boolean {
-	const allWords = sentence.words
-	const allRelatedSentences = [...sentence.prev_sentences, sentence, ...sentence.next_sentences]
-
-	const totalScoreOfRelatedSentences = allRelatedSentences.reduce((sum, s) => sum + s.total_score, 0)
-	const averageScoreOfRelatedSentences = totalScoreOfRelatedSentences / allRelatedSentences.length
-
-	const allWordsAreBelowScoreCap = allWords.every(word => word.score <= MAX_WORD_SCORE)
-	const sentenceScoreIsAboveAverage = sentence.total_score >= averageScoreOfRelatedSentences
-
-	return allWordsAreBelowScoreCap && sentenceScoreIsAboveAverage
-}
-
 function enhanceSentenceWithGameProperties(sentence: Sentence, id: number): Sentence {
 	return {
 		...sentence,
@@ -60,8 +47,10 @@ function getScoreRange(level: number, constantScoreRange: boolean): { min: numbe
 	}
 }
 
-async function fetchSentencesFromAPI(minScore: number, maxScore: number): Promise<Sentence[]> {
-	const response = await fetch(`${import.meta.env.VITE_API_URL}?minScore=${minScore}&maxScore=${maxScore}`)
+async function fetchSentencesFromAPI(minScore: number, maxScore: number, maxWordScore: number): Promise<Sentence[]> {
+	const response = await fetch(
+		`${import.meta.env.VITE_API_URL}?minScore=${minScore}&maxScore=${maxScore}&maxWordScore=${maxWordScore}`
+	)
 	if (!response.ok) {
 		throw new Error(`HTTP error! status: ${response.status}`)
 	}
@@ -73,7 +62,7 @@ export async function selectSentence(level: number): Promise<Sentence | null> {
 	const gameMode = gameModes[mode]
 	const { min, max } = getScoreRange(level, gameMode.constantScoreRange)
 
-	const eligibleSentences = await (await fetchSentencesFromAPI(min, max)).filter(isValidSentence)
+	const eligibleSentences = await fetchSentencesFromAPI(min, max, MAX_WORD_SCORE)
 
 	if (eligibleSentences.length === 0) {
 		console.warn(`No eligible sentences found for level ${level} and score range ${min}-${max}`)
@@ -82,8 +71,4 @@ export async function selectSentence(level: number): Promise<Sentence | null> {
 
 	const selectedSentence = eligibleSentences[Math.floor(Math.random() * eligibleSentences.length)]
 	return enhanceSentenceWithGameProperties(selectedSentence, level)
-}
-
-export function scoreOfSentence(sentence: Sentence): number {
-	return sentence.total_score
 }

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from "svelte"
-	import type { DndEvent } from "svelte-dnd-action"
 
 	import Display from "./Display.svelte"
 	import GameOverPage from "./GameOverPage.svelte"
@@ -55,6 +54,7 @@
 	}
 
 	function initializeAndScrambleSentence(sentence: Sentence): void {
+		console.log(sentence.total_score)
 		currentSentence.set({
 			...sentence,
 			scrambledWords: scrambleWords(sentence.words),
