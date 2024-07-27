@@ -19,6 +19,7 @@
 	import type { DndEvent } from "svelte-dnd-action"
 	import Notification from "./Notification.svelte"
 	import { indexOfWord, swapElements } from "./utils"
+	import { setupGameTimer, stopGameTimer, resetTimerForNextSentence } from "./timer"
 
 	let gameTimerInterval: number | undefined
 	let nextSentence: Sentence | null = null
@@ -57,39 +58,6 @@
 		})
 	}
 
-	function setupGameTimer(starting: boolean = false) {
-		stopGameTimer()
-
-		const timerConfig = gameModes[$gameState.mode].timer
-		if (timerConfig === null) return
-
-		const newTime = calculateNewTime(timerConfig, starting)
-
-		updateGameState().setTime(newTime)
-		gameTimerInterval = setInterval(decrementGameTimer, 1000) as unknown as number
-	}
-
-	function stopGameTimer() {
-		if (gameTimerInterval !== undefined) {
-			clearInterval(gameTimerInterval)
-		}
-	}
-
-	function calculateNewTime(timerConfig: Timer, starting: boolean) {
-		if (timerConfig.resetOnNewLevel) {
-			return timerConfig.increment * (1 + Math.floor($gameState.level / 5))
-		}
-		return starting ? timerConfig.initial : $gameState.timeRemaining + timerConfig.increment
-	}
-
-	function decrementGameTimer() {
-		updateGameState().updateTime(-1)
-		if ($gameState.timeRemaining <= 0) {
-			stopGameTimer()
-			updateGameState().gameOver()
-		}
-	}
-
 	async function advanceToNextSentence(): Promise<void> {
 		isLoadingNextSentence.set(true)
 		updateGameState().setStatus("loading")
@@ -107,14 +75,6 @@
 		nextSentence = null
 		nextSentence = await selectSentence($gameState.level + 1)
 		resetTimerForNextSentence()
-	}
-
-	function resetTimerForNextSentence() {
-		const timer = gameModes[$gameState.mode].timer
-		if (timer !== null) {
-			stopGameTimer()
-			setupGameTimer()
-		}
 	}
 
 	function checkWordOrder(): void {
