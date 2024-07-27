@@ -119,6 +119,7 @@
 			{connectRandomWords}
 			{checkWordOrder}
 			{advanceToNextSentence}
+			scrambleWords={() => initializeAndScrambleSentence($currentSentence)}
 		/>
 		{#if $notification.show}
 			<Notification

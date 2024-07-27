@@ -6,6 +6,7 @@
 	export let connectRandomWords: () => void
 	export let advanceToNextSentence: () => void
 	export let checkWordOrder: () => void
+	export let scrambleWords: () => void
 
 	const EXTRA_TIME_DURATION = 15
 	const testMode = true
@@ -53,6 +54,13 @@
 			<i class="fas fa-check"></i>
 		</button>
 	{/if}
+	<button
+		class="buttons-item"
+		on:click={scrambleWords}
+		title="Scramble"
+	>
+		<i class="fas fa-random"></i>
+	</button>
 	{#if testMode}
 		<button
 			class="buttons-item"

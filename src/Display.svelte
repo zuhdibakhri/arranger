@@ -9,6 +9,7 @@
 	export let connectRandomWords: () => void
 	export let checkWordOrder: () => void
 	export let advanceToNextSentence: () => void
+	export let scrambleWords: () => void
 
 	$: combinedParagraph =
 		$currentSentence.prev_sentences.map(s => s.sentence).join(" ") +
@@ -64,5 +65,6 @@
 		{connectRandomWords}
 		{checkWordOrder}
 		{advanceToNextSentence}
+		{scrambleWords}
 	/>
 </div>
