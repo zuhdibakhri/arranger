@@ -1,4 +1,4 @@
-import type { Sentence, GameMode } from "./types"
+import type { Sentence } from "./types"
 import { get } from "svelte/store"
 import { gameState } from "./stores"
 import { gameModes } from "./gameModes"

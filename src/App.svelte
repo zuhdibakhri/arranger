@@ -93,7 +93,7 @@
 		updateGameState().setStatus("loading")
 
 		while (nextSentence === null) {
-			await new Promise(resolve => setTimeout(resolve, 100)) // Wait for 100ms
+			await new Promise(resolve => setTimeout(resolve, 100))
 		}
 
 		isLoadingNextSentence.set(false)
