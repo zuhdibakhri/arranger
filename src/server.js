@@ -13,8 +13,8 @@ app.get("/sentences", async (req, res) => {
 
 		const [sentencesRows] = await pool.query(
 			`
-            SELECT s.*,
-			GROUP_CONCAT(DISTINCT w.word) AS words,
+			SELECT s.*,
+			GROUP_CONCAT(DISTINCT w.token) AS words,
 			AVG(related.total_score) AS avg_related_score
 			FROM sentences s
 			JOIN words w ON s.id = w.sentence_id
@@ -27,7 +27,7 @@ app.get("/sentences", async (req, res) => {
 			AND (LENGTH(words) - LENGTH(REPLACE(words, ',', '')) + 1) >= 4
 			ORDER BY RAND()
 			LIMIT 1000
-            `,
+			`,
 			[minScore, maxScore, maxWordScore]
 		)
 
