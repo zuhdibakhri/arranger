@@ -20,6 +20,7 @@
 	import Notification from "./Notification.svelte"
 	import { indexOfWord, swapElements } from "./utils"
 	import { setupGameTimer, stopGameTimer, resetTimerForNextSentence } from "./gameTimer"
+	import { handleWordDrag, handleWordSelection } from "./wordEventHandlers"
 
 	let nextSentence: Sentence | null = null
 
@@ -126,39 +127,12 @@
 		}
 	}
 
-	function handleWordDrag(e: CustomEvent<DndEvent<Word>>, isFinal: boolean): void {
-		const { items } = e.detail
-		const originalWords = $currentSentence.scrambledWords
-		const updatedWords = [...items]
-
-		originalWords.forEach((word, index) => {
-			if (word.locked) {
-				const currentIndex = updatedWords.findIndex(w => w.id === word.id)
-				if (currentIndex !== index) {
-					const wordToSwap = updatedWords[index]
-					updatedWords[index] = word
-					updatedWords[currentIndex] = wordToSwap
-				}
-			}
-		})
-		currentSentence.update(sentence => ({ ...sentence, scrambledWords: updatedWords }))
-		if (isFinal && gameModes[$gameState.mode].autoCheck) checkWordOrder()
+	function localHandleWordDrag(e: CustomEvent<DndEvent<Word>>, isFinal: boolean): void {
+		handleWordDrag(e, isFinal, checkWordOrder)
 	}
 
-	function handleWordSelection(wordId: number): void {
-		const words = $currentSentence.scrambledWords
-		const clickedWordIndex = indexOfWord(words, wordId)
-		const selectedWordIndex = words.findIndex(w => w.selected)
-
-		if (selectedWordIndex === -1) {
-			words[clickedWordIndex].selected = true
-		} else {
-			swapElements(words, selectedWordIndex, clickedWordIndex)
-			words.forEach(w => (w.selected = false))
-		}
-
-		currentSentence.update(sentence => ({ ...sentence, scrambledWords: words }))
-		if (gameModes[$gameState.mode].autoCheck) checkWordOrder()
+	function localHandleWordSelection(wordId: number): void {
+		handleWordSelection(wordId, checkWordOrder)
 	}
 
 	function scrambleWords(words: Word[]): Word[] {
@@ -265,8 +239,8 @@
 		<StartPage onStart={startNewGame} />
 	{:else if $gameState.status === "playing"}
 		<Display
-			{handleWordDrag}
-			{handleWordSelection}
+			handleWordDrag={localHandleWordDrag}
+			handleWordSelection={localHandleWordSelection}
 			{lockRandomWord}
 			{connectRandomWords}
 			{checkWordOrder}
