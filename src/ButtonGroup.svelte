@@ -62,4 +62,13 @@
 			<i class="fas fa-arrow-right"></i>
 		</button>
 	{/if}
+	<button
+		class="buttons-item"
+		on:click={() => {
+			updateGameState().setStatus("start")
+		}}
+		title="Quit"
+	>
+		<i class="fas fa-sign-out-alt"></i>
+	</button>
 </div>
