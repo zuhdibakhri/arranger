@@ -1,5 +1,3 @@
-// hintHandlers.ts
-
 import _ from "lodash"
 import { get } from "svelte/store"
 import { currentSentence, gameState, updateGameState, showNotification } from "./stores"
