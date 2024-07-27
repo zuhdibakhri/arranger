@@ -28,8 +28,10 @@
 	})
 
 	async function prepareGameSentences() {
+		updateGameState().setStatus("loading")
 		const firstSentence = await selectSentence(1)
 		initializeAndScrambleSentence(firstSentence)
+		updateGameState().setStatus("playing")
 		nextSentence = await selectSentence(2)
 	}
 
