@@ -13,19 +13,16 @@
 	import Notification from "./Notification.svelte"
 	import { indexOfWord, swapElements } from "./utils"
 
-	// State variables
 	let allSentences
 	let gameTimerInterval: number | undefined
 	let nextSentence: Sentence | null = null
 
-	// Lifecycle
 	onMount(async () => {
 		updateGameState().setStatus("loading")
 		allSentences = await loadSentencesFromAPI()
 		updateGameState().setStatus("start")
 	})
 
-	// API
 	async function loadSentencesFromAPI() {
 		try {
 			const response = await fetch(import.meta.env.VITE_API_URL)
@@ -38,7 +35,6 @@
 		}
 	}
 
-	// Game initialization
 	async function prepareGameSentences() {
 		const firstSentence = await selectSentence(allSentences, 1)
 		initializeAndScrambleSentence(firstSentence)
@@ -67,7 +63,6 @@
 		})
 	}
 
-	// Timer functions
 	function setupGameTimer(starting: boolean = false) {
 		stopGameTimer()
 
@@ -173,7 +168,6 @@
 		}
 	}
 
-	// Event handlers
 	function handleWordDrag(e: CustomEvent<DndEvent<Word>>, isFinal: boolean): void {
 		const { items } = e.detail
 		const originalWords = $currentSentence.scrambledWords
@@ -209,7 +203,6 @@
 		if (gameModes[$gameState.mode].autoCheck) checkWordOrder()
 	}
 
-	// Word manipulation functions
 	function scrambleWords(words: Word[]): Word[] {
 		const unlockedWords = words.filter(word => !word.locked)
 		let shuffledWords = words

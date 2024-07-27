@@ -14,11 +14,9 @@ app.get("/sentences", async (req, res) => {
 		const sentences = rows
 			.map(row => ({
 				...row,
-				words: typeof row.words === "string" ? JSON.parse(row.words) : row.words,
-				prev_sentences:
-					typeof row.prev_sentences === "string" ? JSON.parse(row.prev_sentences) : row.prev_sentences,
-				next_sentences:
-					typeof row.next_sentences === "string" ? JSON.parse(row.next_sentences) : row.next_sentences,
+				words: JSON.parse(row.words),
+				prev_sentences: JSON.parse(row.prev_sentences),
+				next_sentences: JSON.parse(row.next_sentences),
 			}))
 			.filter(Boolean)
 
