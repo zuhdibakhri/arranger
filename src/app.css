@@ -148,7 +148,6 @@ button:hover {
 	justify-content: center;
 	gap: 0.5rem;
 	width: 100%;
-	max-width: 400px;
 	margin: 1rem auto 0;
 	overflow-x: auto;
 	padding-block: 1rem;

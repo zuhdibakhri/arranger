@@ -75,5 +75,6 @@
 		{advanceToNextSentence}
 		{scrambleWords}
 		{getTranslation}
+		isTranslated={sentenceTranslation !== ""}
 	/>
 </div>

@@ -8,6 +8,7 @@
 	export let checkWordOrder: () => void
 	export let scrambleWords: () => void
 	export let getTranslation: () => void
+	export let isTranslated: boolean
 
 	const EXTRA_TIME_DURATION = 15
 	const testMode = true
@@ -49,7 +50,7 @@
 	<button
 		class="buttons-item"
 		on:click={getTranslation}
-		disabled={$gameState.hints.translate === 0}
+		disabled={$gameState.hints.translate === 0 || isTranslated}
 		title="Translate"
 	>
 		<i class="fas fa-language"></i>
