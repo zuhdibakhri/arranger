@@ -21,7 +21,6 @@
 	import { indexOfWord, swapElements } from "./utils"
 	import { setupGameTimer, stopGameTimer, resetTimerForNextSentence } from "./gameTimer"
 
-	let gameTimerInterval: number | undefined
 	let nextSentence: Sentence | null = null
 
 	onMount(() => {
