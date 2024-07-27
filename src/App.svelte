@@ -3,7 +3,7 @@
 	import { onMount } from "svelte"
 	import _ from "lodash"
 	import { gameState, updateGameState, currentSentence, notification, showNotification } from "./stores"
-	import type { Word, Sentence, GameModeKey, HintKey, Timer, NotifType, NotifContent } from "./types"
+	import type { Word, Sentence, GameModeKey, HintKey, Timer } from "./types"
 	import { selectSentence } from "./pickSentences"
 	import { gameModes } from "./gameModes"
 	import StartPage from "./StartPage.svelte"
