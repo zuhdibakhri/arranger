@@ -211,7 +211,7 @@ button:hover {
 }
 
 .combined-paragraph {
-	font-size: 0.9rem;
+	font-size: 1rem;
 	line-height: 1.4;
 	max-height: 20vh;
 	overflow-y: auto;

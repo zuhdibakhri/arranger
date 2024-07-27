@@ -17,6 +17,15 @@
 <div class="buttons">
 	<button
 		class="buttons-item"
+		on:click={() => {
+			updateGameState().setStatus("start")
+		}}
+		title="Quit"
+	>
+		<i class="fas fa-sign-out-alt"></i>
+	</button>
+	<button
+		class="buttons-item"
 		on:click={lockRandomWord}
 		disabled={$gameState.hints.lock === 0}
 		title="Lock"
@@ -56,6 +65,13 @@
 		<i class="fas fa-language"></i>
 		<span class="hint-count">[{$gameState.hints.translate}]</span>
 	</button>
+	<button
+		class="buttons-item"
+		on:click={scrambleWords}
+		title="Scramble"
+	>
+		<i class="fas fa-random"></i>
+	</button>
 	{#if !gameModes[$gameState.mode].autoCheck}
 		<button
 			class="buttons-item"
@@ -65,13 +81,6 @@
 			<i class="fas fa-check"></i>
 		</button>
 	{/if}
-	<button
-		class="buttons-item"
-		on:click={scrambleWords}
-		title="Scramble"
-	>
-		<i class="fas fa-random"></i>
-	</button>
 	{#if testMode}
 		<button
 			class="buttons-item"
@@ -81,13 +90,4 @@
 			<i class="fas fa-arrow-right"></i>
 		</button>
 	{/if}
-	<button
-		class="buttons-item"
-		on:click={() => {
-			updateGameState().setStatus("start")
-		}}
-		title="Quit"
-	>
-		<i class="fas fa-sign-out-alt"></i>
-	</button>
 </div>
