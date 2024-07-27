@@ -26,7 +26,7 @@ app.get("/sentences", async (req, res) => {
 			AND s.total_score >= avg_related_score
 			AND (LENGTH(words) - LENGTH(REPLACE(words, ',', '')) + 1) >= 4
 			ORDER BY RAND()
-			LIMIT 1000
+			LIMIT 1
 			`,
 			[minScore, maxScore, maxWordScore]
 		)

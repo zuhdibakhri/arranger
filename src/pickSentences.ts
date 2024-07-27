@@ -68,7 +68,6 @@ export async function selectSentence(level: number): Promise<Sentence | null> {
 		console.warn(`No eligible sentences found for level ${level} and score range ${min}-${max}`)
 		return null
 	}
-
-	const selectedSentence = eligibleSentences[Math.floor(Math.random() * eligibleSentences.length)]
+	const selectedSentence = eligibleSentences[0]
 	return enhanceSentenceWithGameProperties(selectedSentence, level)
 }
