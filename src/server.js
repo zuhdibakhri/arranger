@@ -7,90 +7,64 @@ const port = 3000
 
 app.use(cors())
 
+const processQueryResult = rows => {
+	return rows.map(row => {
+		const words = row.words
+			? row.words.split("|").map(w => {
+					const [id, token, tag, lemma, score] = w.split(":")
+					return { id: Number(id), sentence_id: row.id, token, tag, lemma, score: Number(score) }
+			  })
+			: []
+
+		const processSentences = sentences => {
+			return sentences
+				? sentences
+						.split("|")
+						.filter(Boolean)
+						.map(s => {
+							const [id, sentence, score] = s.split(":")
+							return { id: Number(id), sentence, total_score: Number(score) }
+						})
+				: []
+		}
+
+		return {
+			id: row.id,
+			current_sentence: row.current_sentence,
+			total_score: row.total_score,
+			words,
+			prev_sentences: processSentences(row.prev_sentences),
+			next_sentences: processSentences(row.next_sentences),
+		}
+	})
+}
+
 app.get("/sentences", async (req, res) => {
 	try {
 		const { minScore, maxScore, maxWordScore = 10 } = req.query
 
-		const [sentencesRows] = await pool.query(
-			`
-			SELECT s.*,
-			GROUP_CONCAT(DISTINCT w.token) AS words,
-			AVG(related.total_score) AS avg_related_score
+		const query = `
+			SELECT 
+				s.id, s.current_sentence, s.total_score,
+				COALESCE(GROUP_CONCAT(DISTINCT w.id, ':', w.token, ':', w.tag, ':', w.lemma, ':', w.score SEPARATOR '|'), '') AS words,
+				COALESCE(GROUP_CONCAT(DISTINCT CASE WHEN sr.relation_type = 'prev' THEN CONCAT(rs.id, ':', rs.current_sentence, ':', rs.total_score) END SEPARATOR '|'), '') AS prev_sentences,
+				COALESCE(GROUP_CONCAT(DISTINCT CASE WHEN sr.relation_type = 'next' THEN CONCAT(rs.id, ':', rs.current_sentence, ':', rs.total_score) END SEPARATOR '|'), '') AS next_sentences
 			FROM sentences s
 			JOIN words w ON s.id = w.sentence_id
 			LEFT JOIN sentence_relations sr ON s.id = sr.main_sentence_id
-			LEFT JOIN sentences related ON sr.related_sentence_id = related.id
+			LEFT JOIN sentences rs ON sr.related_sentence_id = rs.id
 			WHERE s.total_score BETWEEN ? AND ?
 			GROUP BY s.id
 			HAVING MAX(w.score) <= ?
-			AND s.total_score >= avg_related_score
-			AND (LENGTH(words) - LENGTH(REPLACE(words, ',', '')) + 1) >= 4
+				AND s.total_score >= COALESCE(AVG(rs.total_score), 0)
+				AND COUNT(DISTINCT w.id) >= 4
 			ORDER BY RAND()
 			LIMIT 1
-			`,
-			[minScore, maxScore, maxWordScore]
-		)
-
-		const sentences = /** @type {Array<{id: number, current_sentence: string, total_score: number}>} */ (
-			sentencesRows
-		)
-
-		if (sentences.length === 0) {
-			return res.json([])
-		}
-
-		const sentenceIds = sentences.map(s => s.id)
-		const [wordsRows] = await pool.query(
 			`
-            SELECT * FROM words 
-            WHERE sentence_id IN (?)
-        `,
-			[sentenceIds]
-		)
-		const words =
-			/** @type {Array<{id: number, sentence_id: number, token: string, tag: string, lemma: string, score: number}>} */ (
-				wordsRows
-			)
 
-		const [relationsRows] = await pool.query(
-			`
-            SELECT sr.*, s.current_sentence, s.total_score 
-            FROM sentence_relations sr
-            JOIN sentences s ON sr.related_sentence_id = s.id
-            WHERE sr.main_sentence_id IN (?)
-            ORDER BY sr.relation_type, sr.relation_order
-        `,
-			[sentenceIds]
-		)
-		const relations =
-			/** @type {Array<{id: number, main_sentence_id: number, related_sentence_id: number, relation_type: string, relation_order: number, current_sentence: string, total_score: number}>} */ (
-				relationsRows
-			)
+		const [rows] = await pool.query(query, [minScore, maxScore, maxWordScore])
 
-		const processedSentences = sentences.map(sentence => {
-			const sentenceWords = words.filter(w => w.sentence_id === sentence.id)
-			const prevSentences = relations
-				.filter(r => r.main_sentence_id === sentence.id && r.relation_type === "prev")
-				.map(r => ({
-					sentence: r.current_sentence,
-					total_score: r.total_score,
-				}))
-			const nextSentences = relations
-				.filter(r => r.main_sentence_id === sentence.id && r.relation_type === "next")
-				.map(r => ({
-					sentence: r.current_sentence,
-					total_score: r.total_score,
-				}))
-
-			return {
-				id: sentence.id,
-				current_sentence: sentence.current_sentence,
-				total_score: sentence.total_score,
-				words: sentenceWords,
-				prev_sentences: prevSentences,
-				next_sentences: nextSentences,
-			}
-		})
+		const processedSentences = processQueryResult(rows)
 
 		res.json(processedSentences)
 	} catch (error) {
