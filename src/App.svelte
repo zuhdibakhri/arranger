@@ -20,9 +20,9 @@
 
 	// Lifecycle
 	onMount(async () => {
-		updateGameState().loading()
+		updateGameState().setStatus("loading")
 		rawSentences = await fetchSentences()
-		updateGameState().toStartingPage()
+		updateGameState().setStatus("start")
 	})
 
 	// API
@@ -39,22 +39,23 @@
 	}
 
 	// Game initialization
-	async function initializeSentences(mode: GameModeKey) {
-		const firstSentence = await selectSentence(rawSentences, 1, mode)
+	async function initializeSentences() {
+		const firstSentence = await selectSentence(rawSentences, 1)
 		initSentence(firstSentence)
-		nextSentence = await selectSentence(rawSentences, 2, mode)
+		nextSentence = await selectSentence(rawSentences, 2)
 	}
 
 	async function initGame(mode: GameModeKey) {
-		await initializeSentences(mode)
-		updateGameState().reset(mode)
+		updateGameState().setMode(mode)
+		await initializeSentences()
+		updateGameState().reset()
 		if (gameModes[mode].timer !== null) {
 			initTimer(true)
 		}
 	}
 
 	function restartGame() {
-		updateGameState().toStartingPage()
+		updateGameState().setStatus("start")
 		nextSentence = null
 		clearTimer()
 	}
@@ -114,7 +115,7 @@
 		initSentence(nextSentence)
 		updateGameState().incrementLevel()
 		nextSentence = null
-		nextSentence = await selectSentence(rawSentences, $gameState.level + 1, $gameState.mode)
+		nextSentence = await selectSentence(rawSentences, $gameState.level + 1)
 		resetTimerForNextSentence()
 		randomHintChance()
 	}

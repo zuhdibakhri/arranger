@@ -22,7 +22,9 @@
 		text-align: center;
 		width: fit-content;
 		margin-inline: auto;
-		position: static;
+		left: 0;
+		right: 0;
+		position: absolute;
 	}
 
 	.success {

@@ -60,7 +60,8 @@ function getScoreRange(level: number, constantScoreRange: boolean): { min: numbe
 	}
 }
 
-export async function selectSentence(rawSentences: Sentence[], level: number, mode: string): Promise<Sentence | null> {
+export async function selectSentence(rawSentences: Sentence[], level: number): Promise<Sentence | null> {
+	const mode = get(gameState).mode
 	const validSentences = rawSentences.filter(isValidSentence)
 	const gameMode = gameModes[mode]
 	const { min, max } = getScoreRange(level, gameMode.constantScoreRange)

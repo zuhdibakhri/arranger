@@ -1,47 +1,45 @@
 import { writable } from "svelte/store"
 import { get } from "svelte/store"
-import type { GameState, Sentence, GameModeKey, HintKey, NotifContent, NotifType } from "./types"
+import type { GameState, Sentence, GameModeKey, HintKey, NotifContent, NotifType, GameStatus } from "./types"
 import { gameModes } from "./gameModes"
+
+const emptyHints = {
+	lock: 0,
+	connect: 0,
+	extraTime: 0,
+	extraLife: 0,
+}
 
 export const gameState = writable<GameState>({
 	status: "loading",
 	mode: "default",
 	level: 1,
 	lives: null,
-	hints: {
-		lock: 0,
-		connect: 0,
-		extraTime: 0,
-		extraLife: 0,
-	},
+	hints: emptyHints,
 	timeRemaining: null,
 })
 
 export function updateGameState() {
 	const state = get(gameState)
 
-	function toStartingPage() {
-		gameState.set({ ...state, status: "start" })
+	function setStatus(status: GameStatus) {
+		gameState.set({ ...state, status })
 	}
 
-	function loading() {
-		gameState.set({ ...state, status: "loading" })
+	function setMode(mode: GameModeKey) {
+		gameState.set({ ...state, mode })
 	}
 
-	function reset(mode: GameModeKey) {
+	function reset() {
+		const mode = get(gameState).mode
 		const selectedMode = gameModes[mode]
-		const emptyAllHints = {
-			lock: 0,
-			connect: 0,
-			extraTime: 0,
-			extraLife: 0,
-		}
+
 		gameState.set({
 			status: "playing",
 			mode,
 			level: 1,
 			lives: selectedMode.lives,
-			hints: emptyAllHints,
+			hints: emptyHints,
 			timeRemaining: selectedMode.timer ? selectedMode.timer.initial : null,
 		})
 	}
@@ -96,8 +94,8 @@ export function updateGameState() {
 	}
 
 	return {
-		toStartingPage,
-		loading,
+		setStatus,
+		setMode,
 		reset,
 		updateHints,
 		updateLives,
