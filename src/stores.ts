@@ -1,21 +1,19 @@
 import { writable } from "svelte/store"
 import { get } from "svelte/store"
-import type { GameState, Sentence, GameModeKey, HintKey, NotifContent, NotifType, GameStatus } from "./types"
+import type { GameState, Sentence, GameMode, GameModeKey, HintKey, NotifContent, NotifType, GameStatus } from "./types"
 import { gameModes } from "./gameModes"
-
-const emptyHints = {
-	lock: 0,
-	connect: 0,
-	extraTime: 0,
-	extraLife: 0,
-}
 
 export const gameState = writable<GameState>({
 	status: "loading",
 	mode: "default",
 	level: 1,
 	lives: null,
-	hints: emptyHints,
+	hints: {
+		lock: null,
+		connect: null,
+		extraTime: null,
+		extraLife: null,
+	},
 	timeRemaining: null,
 })
 
@@ -30,6 +28,14 @@ export function updateGameState() {
 		gameState.set({ ...state, mode })
 	}
 
+	function resetHints(selectedMode: GameMode): GameState["hints"] {
+		return Object.keys(state.hints).reduce((acc, key) => {
+			const hintWeight = selectedMode.hintsWeight[key as HintKey]
+			acc[key as HintKey] = hintWeight === null ? null : 0
+			return acc
+		}, {} as GameState["hints"])
+	}
+
 	function reset() {
 		const mode = get(gameState).mode
 		const selectedMode = gameModes[mode]
@@ -39,7 +45,7 @@ export function updateGameState() {
 			mode,
 			level: 1,
 			lives: selectedMode.lives,
-			hints: emptyHints,
+			hints: resetHints(selectedMode),
 			timeRemaining: selectedMode.timer ? selectedMode.timer.initial : null,
 		})
 	}
