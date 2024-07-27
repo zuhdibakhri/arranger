@@ -3,9 +3,8 @@
 	import { gameState, currentSentence } from "./stores"
 	import { gameModes } from "./gameModes"
 	import ButtonGroup from "./ButtonGroup.svelte"
+	import { handleWordDrag, handleWordSelection } from "./wordEventHandlers"
 
-	export let handleWordDrag: (e: any, isFinal: boolean) => void
-	export let handleWordSelection: (wordId: number) => void
 	export let lockRandomWord: () => void
 	export let connectRandomWords: () => void
 	export let checkWordOrder: () => void
@@ -36,8 +35,8 @@
 					type: "word",
 					dragDisabled: false,
 				}}
-				on:consider={e => handleWordDrag(e, false)}
-				on:finalize={e => handleWordDrag(e, true)}
+				on:consider={e => handleWordDrag(e, false, checkWordOrder)}
+				on:finalize={e => handleWordDrag(e, true, checkWordOrder)}
 				class="scrambled-words"
 			>
 				{#each $currentSentence.scrambledWords as word (word.id)}
@@ -47,7 +46,7 @@
 						class:locked={word.locked}
 						style="border-left-color: {word.connectionLeft ||
 							'transparent'}; border-right-color: {word.connectionRight || 'transparent'};"
-						on:click={() => handleWordSelection(word.id)}
+						on:click={() => handleWordSelection(word.id, checkWordOrder)}
 						draggable={!word.locked}
 					>
 						{word.token}

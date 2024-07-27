@@ -1,27 +1,29 @@
 <script lang="ts">
-	import "./app.css"
 	import { onMount } from "svelte"
-	import _ from "lodash"
+	import type { DndEvent } from "svelte-dnd-action"
+
+	import Display from "./Display.svelte"
+	import GameOverPage from "./GameOverPage.svelte"
+	import Notification from "./Notification.svelte"
+	import StartPage from "./StartPage.svelte"
+
+	import { gameModes } from "./gameModes"
+	import { resetTimerForNextSentence, setupGameTimer, stopGameTimer } from "./gameTimer"
+	import { addRandomHint, connectRandomWords, lockRandomWord } from "./hintHandlers"
+	import { selectSentence } from "./pickSentences"
 	import {
-		gameState,
-		updateGameState,
 		currentSentence,
+		gameState,
+		isLoadingNextSentence,
 		notification,
 		showNotification,
-		isLoadingNextSentence,
+		updateGameState,
 	} from "./stores"
-	import type { Word, Sentence, GameModeKey, HintKey } from "./types"
-	import { selectSentence } from "./pickSentences"
-	import { gameModes } from "./gameModes"
-	import StartPage from "./StartPage.svelte"
-	import GameOverPage from "./GameOverPage.svelte"
-	import Display from "./Display.svelte"
-	import type { DndEvent } from "svelte-dnd-action"
-	import Notification from "./Notification.svelte"
-	import { indexOfWord, swapElements } from "./utils"
-	import { setupGameTimer, stopGameTimer, resetTimerForNextSentence } from "./gameTimer"
-	import { handleWordDrag, handleWordSelection } from "./wordEventHandlers"
-	import { addRandomHint, lockRandomWord, connectRandomWords } from "./hintHandlers"
+	import type { GameModeKey, Sentence, Word } from "./types"
+
+	import _ from "lodash"
+
+	import "./app.css"
 
 	let nextSentence: Sentence | null = null
 
@@ -93,14 +95,6 @@
 		}
 	}
 
-	function localHandleWordDrag(e: CustomEvent<DndEvent<Word>>, isFinal: boolean): void {
-		handleWordDrag(e, isFinal, checkWordOrder)
-	}
-
-	function localHandleWordSelection(wordId: number): void {
-		handleWordSelection(wordId, checkWordOrder)
-	}
-
 	function scrambleWords(words: Word[]): Word[] {
 		const unlockedWords = words.filter(word => !word.locked)
 		let shuffledWords = words
@@ -122,8 +116,6 @@
 		<StartPage onStart={startNewGame} />
 	{:else if $gameState.status === "playing"}
 		<Display
-			handleWordDrag={localHandleWordDrag}
-			handleWordSelection={localHandleWordSelection}
 			{lockRandomWord}
 			{connectRandomWords}
 			{checkWordOrder}
