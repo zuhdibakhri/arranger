@@ -56,6 +56,7 @@
 	}
 
 	function initializeAndScrambleSentence(sentence: Sentence): void {
+		console.log(sentence)
 		currentSentence.set({
 			...sentence,
 			scrambledWords: scrambleWords(sentence.words),

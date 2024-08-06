@@ -5,7 +5,7 @@ export type Sentence = {
 	current_sentence: string
 	words: Word[]
 	scrambledWords: Word[]
-	total_score: number
+	total_syllables: number
 	prev_sentences: SurroundingSentences[]
 	next_sentences: SurroundingSentences[]
 }
@@ -15,7 +15,7 @@ export type Word = {
 	token: string
 	tag: string
 	lemma: string
-	score: number
+	syllable_count: number
 	locked: boolean
 	selected: boolean
 	connectionLeft: string
