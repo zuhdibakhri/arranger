@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { gameState, updateGameState } from "./stores"
-	import { gameModes } from "./gameModes"
+	import { gameState, updateGameState } from "../stores"
+	import { gameModes } from "../gameModes"
 
 	export let lockRandomWord: () => void
 	export let connectRandomWords: () => void

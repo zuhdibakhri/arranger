@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { GameModeKey } from "./types"
+	import type { GameModeKey } from "../types"
 	export let onStart: (mode: GameModeKey) => void
 </script>
 

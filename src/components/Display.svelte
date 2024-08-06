@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { dndzone } from "svelte-dnd-action"
-	import { gameState, currentSentence, sentenceTranslation } from "./stores"
-	import { gameModes } from "./gameModes"
+	import { gameState, currentSentence, sentenceTranslation } from "../stores"
+	import { gameModes } from "../gameModes"
 	import ButtonGroup from "./ButtonGroup.svelte"
-	import { handleWordDrag, handleWordSelection } from "./wordEventHandlers"
+	import { handleWordDrag, handleWordSelection } from "../wordEventHandlers"
 
 	export let lockRandomWord: () => void
 	export let connectRandomWords: () => void

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from "svelte"
 
-	import Display from "./Display.svelte"
-	import GameOverPage from "./GameOverPage.svelte"
-	import Notification from "./Notification.svelte"
-	import StartPage from "./StartPage.svelte"
+	import Display from "./components/Display.svelte"
+	import GameOverPage from "./components/GameOverPage.svelte"
+	import Notification from "./components/Notification.svelte"
+	import StartPage from "./components/StartPage.svelte"
 
 	import { gameModes } from "./gameModes"
 	import { resetTimerForNextSentence, setupGameTimer, stopGameTimer } from "./gameTimer"
