@@ -1,6 +1,6 @@
 import _ from "lodash"
 import { get } from "svelte/store"
-import { currentSentence, gameState, updateGameState, showNotification } from "./stores"
+import { currentSentence, gameState, showNotification } from "./stores"
 import type { Word, HintKey } from "./types"
 import { indexOfWord, swapElements } from "./utils"
 import { gameModes } from "./gameModes"
@@ -16,10 +16,10 @@ export function addRandomHint(): void {
 	const selectedHint = selectRandomHint(availableHints)
 
 	if (selectedHint === "extraLife") {
-		updateGameState().updateLives(1)
+		gameState.updateLives(1)
 		showNotification("+1 life", "info")
 	} else {
-		updateGameState().updateHints(selectedHint, 1)
+		gameState.updateHints(selectedHint, 1)
 		showNotification(`+1 hint: ${selectedHint}`, "info")
 	}
 }
@@ -60,7 +60,7 @@ export function lockRandomWord(): void {
 	scrambledWords[correctPosition].locked = true
 
 	currentSentence.update(sentence => ({ ...sentence, scrambledWords }))
-	updateGameState().updateHints("lock", -1)
+	gameState.updateHints("lock", -1)
 }
 
 function getWordsNotInCorrectPosition(originalWords: Word[], scrambledWords: Word[]): Word[] {
@@ -89,7 +89,7 @@ export function connectRandomWords(): void {
 	scrambledWords[secondWordIndex].connectionLeft = connectionColor
 
 	currentSentence.update(sentence => ({ ...sentence, scrambledWords }))
-	updateGameState().updateHints("connect", -1)
+	gameState.updateHints("connect", -1)
 }
 
 function findAvailableConnections(
@@ -127,6 +127,6 @@ function isValidConnection(firstWord: Word, secondWord: Word, originalWords: Wor
 
 export async function getTranslation(language: string): Promise<string | null> {
 	let sentenceTranslation
-	updateGameState().updateHints("translate", -1)
+	gameState.updateHints("translate", -1)
 	return (sentenceTranslation = await translateSentence(get(currentSentence).current_sentence, language))
 }

@@ -1,4 +1,4 @@
-import { gameState, updateGameState } from "./stores"
+import { gameState } from "./stores"
 import { get } from "svelte/store"
 import { gameModes } from "./gameModes"
 import type { Timer } from "./types"
@@ -13,7 +13,7 @@ export function setupGameTimer(starting: boolean = false) {
 
 	const newTime = calculateNewTime(timerConfig, starting)
 
-	updateGameState().setTime(newTime)
+	gameState.setTime(newTime)
 	gameTimerInterval = setInterval(decrementGameTimer, 1000) as unknown as number
 }
 
@@ -31,10 +31,10 @@ function calculateNewTime(timerConfig: Timer, starting: boolean) {
 }
 
 function decrementGameTimer() {
-	updateGameState().updateTime(-1)
+	gameState.updateTime(-1)
 	if (get(gameState).timeRemaining <= 0) {
 		stopGameTimer()
-		updateGameState().gameOver()
+		gameState.gameOver()
 	}
 }
 

@@ -16,7 +16,6 @@
 		isLoadingNextSentence,
 		notification,
 		showNotification,
-		updateGameState,
 		sentenceTranslation,
 	} from "./stores"
 	import type { GameModeKey, Sentence, Word } from "./types"
@@ -29,28 +28,28 @@
 	const TRANSLATION_LANGUAGE = "Indonesian"
 
 	onMount(() => {
-		updateGameState().setStatus("start")
+		gameState.setStatus("start")
 	})
 
 	async function prepareGameSentences() {
-		updateGameState().setStatus("loading")
+		gameState.setStatus("loading")
 		const firstSentence = await selectSentence(1)
 		initializeAndScrambleSentence(firstSentence)
-		updateGameState().setStatus("playing")
+		gameState.setStatus("playing")
 		nextSentence = await selectSentence(2)
 	}
 
 	async function startNewGame(mode: GameModeKey) {
-		updateGameState().setMode(mode)
+		gameState.setMode(mode)
 		await prepareGameSentences()
-		updateGameState().reset()
+		gameState.reset()
 		if (gameModes[mode].timer !== null) {
 			setupGameTimer(true)
 		}
 	}
 
 	function resetGameToStart() {
-		updateGameState().setStatus("start")
+		gameState.setStatus("start")
 		nextSentence = null
 		stopGameTimer()
 	}
@@ -68,18 +67,18 @@
 
 	async function advanceToNextSentence(): Promise<void> {
 		isLoadingNextSentence.set(true)
-		updateGameState().setStatus("loading")
+		gameState.setStatus("loading")
 
 		while (nextSentence === null) {
 			await new Promise(resolve => setTimeout(resolve, 100))
 		}
 
 		isLoadingNextSentence.set(false)
-		updateGameState().setStatus("playing")
+		gameState.setStatus("playing")
 
 		sentenceTranslation.set("")
 		initializeAndScrambleSentence(nextSentence)
-		updateGameState().incrementLevel()
+		gameState.incrementLevel()
 		addRandomHint()
 		nextSentence = null
 		nextSentence = await selectSentence($gameState.level + 1)
@@ -94,7 +93,7 @@
 			showNotification("Correct!", "success")
 			advanceToNextSentence()
 		} else if (gameModes[$gameState.mode].lives) {
-			updateGameState().updateLives(-1)
+			gameState.updateLives(-1)
 			if (!gameModes[$gameState.mode].autoCheck) {
 				showNotification("Try again!", "error")
 			}

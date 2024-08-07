@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { gameState, updateGameState } from "../stores"
+	import { gameState } from "../stores"
 	import { gameModes } from "../gameModes"
 
 	export let lockRandomWord: () => void
@@ -18,7 +18,7 @@
 	<button
 		class="buttons-item"
 		on:click={() => {
-			updateGameState().setStatus("start")
+			gameState.setStatus("start")
 		}}
 		title="Quit"
 	>
@@ -46,8 +46,8 @@
 		<button
 			class="buttons-item"
 			on:click={() => {
-				updateGameState().updateHints("extraTime", -1)
-				updateGameState().updateTime(EXTRA_TIME_DURATION)
+				gameState.updateHints("extraTime", -1)
+				gameState.updateTime(EXTRA_TIME_DURATION)
 			}}
 			disabled={$gameState.hints.extraTime === 0}
 			title="Extra Time"
