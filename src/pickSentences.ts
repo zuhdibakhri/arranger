@@ -4,8 +4,7 @@ import { gameState } from "./stores"
 import { gameModes } from "./gameModes"
 
 const MAX_WORD_SYLLABLES = 5
-const CONSTANT_RANGE_MIN_SYLLABLES = 5
-const CONSTANT_RANGE_MAX_SYLLABLES = 7
+const CONSTANT_RANGE = { min: 5, max: 7 }
 const SYLLABLE_GROUPS = [
 	{ min: 5, max: 7 },
 	{ min: 8, max: 10 },
@@ -25,15 +24,17 @@ const SYLLABLE_GROUPS = [
 	{ min: 50, max: Infinity },
 ]
 
-function enhanceSentenceWithGameProperties(sentence: Sentence, id: number): Sentence {
-	const resetWordProperties = (word: Word) => ({
+function resetWordProperties(word: Word): Word {
+	return {
 		...word,
 		selected: false,
 		locked: false,
 		connectionLeft: "",
 		connectionRight: "",
-	})
+	}
+}
 
+function enhanceSentenceWithGameProperties(sentence: Sentence, id: number): Sentence {
 	return {
 		...sentence,
 		id,
@@ -42,16 +43,11 @@ function enhanceSentenceWithGameProperties(sentence: Sentence, id: number): Sent
 	}
 }
 
-function getSyllableRange(level: number, constantSyllableRange: boolean): { min: number; max: number } {
-	if (constantSyllableRange) {
-		return {
-			min: CONSTANT_RANGE_MIN_SYLLABLES,
-			max: CONSTANT_RANGE_MAX_SYLLABLES,
-		}
-	} else {
-		const groupIndex = Math.min(Math.floor((level - 1) / 5), SYLLABLE_GROUPS.length - 1)
-		return SYLLABLE_GROUPS[groupIndex]
-	}
+function getSyllableRange(level: number, useConstantRange: boolean): { min: number; max: number } {
+	if (useConstantRange) return CONSTANT_RANGE
+
+	const groupIndex = Math.min(Math.floor((level - 1) / 5), SYLLABLE_GROUPS.length - 1)
+	return SYLLABLE_GROUPS[groupIndex]
 }
 
 async function fetchSentencesFromAPI(
@@ -59,28 +55,31 @@ async function fetchSentencesFromAPI(
 	maxSyllables: number,
 	maxWordSyllables: number
 ): Promise<Sentence[]> {
-	const response = await fetch(
-		`${
-			import.meta.env.VITE_API_URL
-		}?minSyllables=${minSyllables}&maxSyllables=${maxSyllables}&maxWordSyllables=${maxWordSyllables}`
-	)
-	if (!response.ok) {
-		throw new Error(`HTTP error! status: ${response.status}`)
-	}
+	const apiUrl = new URL(import.meta.env.VITE_API_URL)
+	apiUrl.searchParams.append("minSyllables", minSyllables.toString())
+	apiUrl.searchParams.append("maxSyllables", maxSyllables.toString())
+	apiUrl.searchParams.append("maxWordSyllables", maxWordSyllables.toString())
+
+	const response = await fetch(apiUrl.toString())
+	if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+
 	return await response.json()
 }
 
 export async function selectSentence(level: number): Promise<Sentence | null> {
-	const mode = get(gameState).mode
-	const gameMode = gameModes[mode]
-	const { min, max } = getSyllableRange(level, gameMode.constantScoreRange)
+	const { mode } = get(gameState)
+	const { constantScoreRange } = gameModes[mode]
+	const { min, max } = getSyllableRange(level, constantScoreRange)
 
-	const eligibleSentences = await fetchSentencesFromAPI(min, max, MAX_WORD_SYLLABLES)
-
-	if (eligibleSentences.length === 0) {
-		console.warn(`No eligible sentences found for level ${level} and syllable range ${min}-${max}`)
+	try {
+		const eligibleSentences = await fetchSentencesFromAPI(min, max, MAX_WORD_SYLLABLES)
+		if (eligibleSentences.length === 0) {
+			console.warn(`No eligible sentences found for level ${level} and syllable range ${min}-${max}`)
+			return null
+		}
+		return enhanceSentenceWithGameProperties(eligibleSentences[0], level)
+	} catch (error) {
+		console.error("Error fetching sentences:", error)
 		return null
 	}
-	const selectedSentence = eligibleSentences[0]
-	return enhanceSentenceWithGameProperties(selectedSentence, level)
 }
