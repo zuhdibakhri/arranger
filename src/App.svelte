@@ -112,12 +112,12 @@
 	}
 
 	function handleIncorrectOrder(): void {
-		if (gameModes[$gameState.mode].lives) {
-			gameState.updateLives(-1)
-			if (!gameModes[$gameState.mode].autoCheck) {
-				showNotification("Try again!", "error")
-			}
-		}
+		if (!gameModes[$gameState.mode].lives) return
+
+		gameState.updateLives(-1)
+		if (gameModes[$gameState.mode].autoCheck) return
+
+		showNotification("Try again!", "error")
 	}
 
 	function scrambleWords(words: Word[]): Word[] {
