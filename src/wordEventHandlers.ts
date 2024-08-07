@@ -6,36 +6,60 @@ import { indexOfWord, swapElements } from "./utils"
 import { get } from "svelte/store"
 
 export function handleWordDrag(e: CustomEvent<DndEvent<Word>>, isFinal: boolean, checkWordOrder: () => void): void {
-	const { items } = e.detail
+	const { items: updatedWords } = e.detail
 	const originalWords = get(currentSentence).scrambledWords
-	const updatedWords = [...items]
 
-	originalWords.forEach((word, index) => {
-		if (word.locked) {
-			const currentIndex = updatedWords.findIndex(w => w.id === word.id)
-			if (currentIndex !== index) {
-				const wordToSwap = updatedWords[index]
-				updatedWords[index] = word
-				updatedWords[currentIndex] = wordToSwap
-			}
-		}
-	})
-	currentSentence.update(sentence => ({ ...sentence, scrambledWords: updatedWords }))
-	if (isFinal && gameModes[get(gameState).mode as GameModeKey].autoCheck) checkWordOrder()
+	const finalWordOrder = maintainLockedWordPositions(originalWords, updatedWords)
+	updateCurrentSentence(finalWordOrder)
+
+	if (isFinal && shouldAutoCheck()) {
+		checkWordOrder()
+	}
 }
 
 export function handleWordSelection(wordId: number, checkWordOrder: () => void): void {
 	const words = get(currentSentence).scrambledWords
 	const clickedWordIndex = indexOfWord(words, wordId)
-	const selectedWordIndex = words.findIndex(w => w.selected)
+	const selectedWordIndex = words.findIndex(word => word.selected)
 
 	if (selectedWordIndex === -1) {
-		words[clickedWordIndex].selected = true
+		selectWord(words, clickedWordIndex)
 	} else {
-		swapElements(words, selectedWordIndex, clickedWordIndex)
-		words.forEach(w => (w.selected = false))
+		swapAndDeselectWords(words, selectedWordIndex, clickedWordIndex)
 	}
 
+	updateCurrentSentence(words)
+
+	if (shouldAutoCheck()) {
+		checkWordOrder()
+	}
+}
+
+function maintainLockedWordPositions(originalWords: Word[], updatedWords: Word[]): Word[] {
+	originalWords.forEach((word, index) => {
+		if (word.locked) {
+			const currentIndex = updatedWords.findIndex(w => w.id === word.id)
+			if (currentIndex !== index) {
+				swapElements(updatedWords, index, currentIndex)
+			}
+		}
+	})
+	return updatedWords
+}
+
+function updateCurrentSentence(words: Word[]): void {
 	currentSentence.update(sentence => ({ ...sentence, scrambledWords: words }))
-	if (gameModes[get(gameState).mode as GameModeKey].autoCheck) checkWordOrder()
+}
+
+function shouldAutoCheck(): boolean {
+	return gameModes[get(gameState).mode as GameModeKey].autoCheck
+}
+
+function selectWord(words: Word[], index: number): void {
+	words[index].selected = true
+}
+
+function swapAndDeselectWords(words: Word[], index1: number, index2: number): void {
+	swapElements(words, index1, index2)
+	words.forEach(word => (word.selected = false))
 }
