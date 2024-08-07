@@ -39,10 +39,11 @@ function applySelectedHint(selectedHint: HintKey): void {
 	if (selectedHint === "extraLife") {
 		gameState.updateLives(1)
 		showNotification("+1 life", "info")
-	} else {
-		gameState.updateHints(selectedHint, 1)
-		showNotification(`+1 hint: ${selectedHint}`, "info")
+		return
 	}
+
+	gameState.updateHints(selectedHint, 1)
+	showNotification(`+1 hint: ${selectedHint}`, "info")
 }
 
 export function lockRandomWord(): void {
@@ -99,7 +100,7 @@ export function connectRandomWords(): void {
 
 function findAvailableConnections(
 	originalWords: Word[],
-	scrambledWords: Word[]
+	scrambledWords: Word[],
 ): Array<{ firstWord: Word; secondWord: Word }> {
 	return originalWords
 		.filter(word => indexOfWord(originalWords, word.id) !== originalWords.length - 1)
@@ -120,7 +121,7 @@ function isValidConnection(firstWord: Word, secondWord: Word, originalWords: Wor
 		secondWord,
 		originalWords,
 		firstWordIndex,
-		secondWordIndex
+		secondWordIndex,
 	)
 
 	return !(firstWord.connectionRight || secondWord.connectionLeft || areAlreadyNeighbors || haveConflictingConnection)
@@ -131,7 +132,7 @@ function checkIfNeighbors(
 	firstWordIndex: number,
 	secondWordIndex: number,
 	firstWord: Word,
-	secondWord: Word
+	secondWord: Word,
 ): boolean {
 	return (
 		scrambledWords[firstWordIndex + 1].token === secondWord.token ||
@@ -144,7 +145,7 @@ function checkConflictingConnections(
 	secondWord: Word,
 	originalWords: Word[],
 	firstWordIndex: number,
-	secondWordIndex: number
+	secondWordIndex: number,
 ): boolean {
 	return (
 		(firstWord.connectionLeft && originalWords[firstWordIndex - 1] !== originalWords[secondWordIndex - 2]) ||

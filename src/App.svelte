@@ -40,9 +40,8 @@
 		gameState.setMode(mode)
 		await prepareGameSentences()
 		gameState.reset()
-		if (gameModes[mode].timer !== null) {
-			setupGameTimer(true)
-		}
+		if (gameModes[mode].timer === null) return
+		setupGameTimer(true)
 	}
 
 	function resetGameToStart() {
@@ -101,9 +100,9 @@
 
 		if (wordsInCorrectPosition) {
 			handleCorrectOrder()
-		} else {
-			handleIncorrectOrder()
+			return
 		}
+		handleIncorrectOrder()
 	}
 
 	function handleCorrectOrder(): void {
