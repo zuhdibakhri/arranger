@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte"
+	import _ from "lodash"
 
 	import Display from "./components/Display.svelte"
 	import GameOverPage from "./components/GameOverPage.svelte"
@@ -20,16 +21,12 @@
 	} from "./stores"
 	import type { GameModeKey, Sentence, Word } from "./types"
 
-	import _ from "lodash"
-
 	import "./app.css"
 
-	let nextSentence: Sentence | null = null
 	const TRANSLATION_LANGUAGE = "Indonesian"
+	let nextSentence: Sentence | null = null
 
-	onMount(() => {
-		gameState.setStatus("start")
-	})
+	onMount(() => gameState.setStatus("start"))
 
 	async function prepareGameSentences() {
 		gameState.setStatus("loading")
@@ -66,23 +63,36 @@
 	}
 
 	async function advanceToNextSentence(): Promise<void> {
+		await loadNextSentence()
+		prepareNextLevel()
+	}
+
+	async function loadNextSentence(): Promise<void> {
 		isLoadingNextSentence.set(true)
 		gameState.setStatus("loading")
-
-		while (nextSentence === null) {
-			await new Promise(resolve => setTimeout(resolve, 100))
-		}
-
+		await waitForNextSentence()
 		isLoadingNextSentence.set(false)
 		gameState.setStatus("playing")
+	}
 
+	function prepareNextLevel(): void {
 		sentenceTranslation.set("")
 		initializeAndScrambleSentence(nextSentence)
 		gameState.incrementLevel()
 		addRandomHint()
+		resetTimerForNextSentence()
+		loadFutureSentence()
+	}
+
+	async function waitForNextSentence(): Promise<void> {
+		while (nextSentence === null) {
+			await new Promise(resolve => setTimeout(resolve, 100))
+		}
+	}
+
+	async function loadFutureSentence(): Promise<void> {
 		nextSentence = null
 		nextSentence = await selectSentence($gameState.level + 1)
-		resetTimerForNextSentence()
 	}
 
 	function checkWordOrder(): void {
@@ -90,9 +100,19 @@
 		const wordsInCorrectPosition = scrambledWords.every((word, index) => word.token === correctOrder[index].token)
 
 		if (wordsInCorrectPosition) {
-			showNotification("Correct!", "success")
-			advanceToNextSentence()
-		} else if (gameModes[$gameState.mode].lives) {
+			handleCorrectOrder()
+		} else {
+			handleIncorrectOrder()
+		}
+	}
+
+	function handleCorrectOrder(): void {
+		showNotification("Correct!", "success")
+		advanceToNextSentence()
+	}
+
+	function handleIncorrectOrder(): void {
+		if (gameModes[$gameState.mode].lives) {
 			gameState.updateLives(-1)
 			if (!gameModes[$gameState.mode].autoCheck) {
 				showNotification("Try again!", "error")
@@ -104,11 +124,19 @@
 		const unlockedWords = words.filter(word => !word.locked)
 		let shuffledWords = words
 
-		while (shuffledWords.every((word, index) => word.token === words[index].token) === true) {
-			const shuffledUnlockedWords = _.shuffle(unlockedWords)
-			shuffledWords = words.map(word => (word.locked ? word : shuffledUnlockedWords.shift()))
+		while (areWordsInOriginalOrder(shuffledWords, words)) {
+			shuffledWords = shuffleUnlockedWords(words, unlockedWords)
 		}
 		return shuffledWords
+	}
+
+	function areWordsInOriginalOrder(shuffledWords: Word[], originalWords: Word[]): boolean {
+		return shuffledWords.every((word, index) => word.token === originalWords[index].token)
+	}
+
+	function shuffleUnlockedWords(words: Word[], unlockedWords: Word[]): Word[] {
+		const shuffledUnlockedWords = _.shuffle(unlockedWords)
+		return words.map(word => (word.locked ? word : shuffledUnlockedWords.shift()))
 	}
 
 	async function handleTranslation() {
