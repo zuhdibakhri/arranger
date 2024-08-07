@@ -23,6 +23,24 @@
 
 	import "./app.css"
 
+	const Punctuation_tags = [
+		"PUNCT",
+		".",
+		",",
+		":",
+		"-LRB-",
+		"-RRB-",
+		"-LSB-",
+		"-RSB-",
+		"-LCB-",
+		"-RCB-",
+		"``",
+		"''",
+		"HYPH",
+		"NFP",
+		"POS",
+	]
+
 	const TRANSLATION_LANGUAGE = "Indonesian"
 	let nextSentence: Sentence | null = null
 
@@ -51,13 +69,17 @@
 	}
 
 	function initializeAndScrambleSentence(sentence: Sentence): void {
-		console.log({
-			current_sentence: sentence.current_sentence,
-			total_syllables: sentence.total_syllables,
-		})
+		console.log(`${sentence.current_sentence} [ ${sentence.total_syllables} ]\n`)
+
+		const wordsWithLockedPunctuation = sentence.words.map(word => ({
+			...word,
+			locked: word.locked || Punctuation_tags.includes(word.tag),
+		}))
+
 		currentSentence.set({
 			...sentence,
-			scrambledWords: scrambleWords(sentence.words),
+			words: wordsWithLockedPunctuation,
+			scrambledWords: scrambleWords(wordsWithLockedPunctuation),
 		})
 	}
 
