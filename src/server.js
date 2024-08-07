@@ -6,46 +6,52 @@ const app = express()
 const port = 3000
 
 app.use(cors())
-
 const processQueryResult = rows => {
-	return rows.map(row => {
-		const words = row.words
-			? row.words.split("|").map(w => {
-					const [id, token, tag, lemma, syllable_count] = w.split(":")
-					return {
-						id: Number(id),
-						sentence_id: row.id,
-						token,
-						tag,
-						lemma,
-						syllable_count: Number(syllable_count),
-					}
-			  })
-			: []
+	return rows.map(processRow)
+}
 
-		const processSentences = sentences => {
-			return sentences
-				? sentences
-						.split("|")
-						.filter(Boolean)
-						.map(s => {
-							const [id, sentence, total_syllables] = s.split(":")
-							return { id: Number(id), sentence, total_syllables: Number(total_syllables) }
-						})
-				: []
-		}
+const processRow = row => {
+	return {
+		id: row.id,
+		current_sentence: row.current_sentence,
+		total_syllables: row.total_syllables,
+		words: parseWords(row.words, row.id),
+		prev_sentences: parseSentences(row.prev_sentences),
+		next_sentences: parseSentences(row.next_sentences),
+	}
+}
 
+const parseWords = (wordsString, sentenceId) => {
+	if (!wordsString) return []
+
+	return wordsString.split("|").map(word => {
+		const [id, token, tag, lemma, syllable_count] = word.split(":")
 		return {
-			id: row.id,
-			current_sentence: row.current_sentence,
-			total_syllables: row.total_syllables,
-			words,
-			prev_sentences: processSentences(row.prev_sentences),
-			next_sentences: processSentences(row.next_sentences),
+			id: Number(id),
+			sentence_id: sentenceId,
+			token,
+			tag,
+			lemma,
+			syllable_count: Number(syllable_count),
 		}
 	})
 }
 
+const parseSentences = sentencesString => {
+	if (!sentencesString) return []
+
+	return sentencesString
+		.split("|")
+		.filter(Boolean)
+		.map(sentence => {
+			const [id, sentenceText, total_syllables] = sentence.split(":")
+			return {
+				id: Number(id),
+				sentence: sentenceText,
+				total_syllables: Number(total_syllables),
+			}
+		})
+}
 app.get("/sentences", async (req, res) => {
 	try {
 		const { minSyllables, maxSyllables, maxWordSyllables = 5 } = req.query
