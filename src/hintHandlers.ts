@@ -1,7 +1,7 @@
 import _ from "lodash"
 import { get } from "svelte/store"
 import { currentSentence, gameState, showNotification } from "./stores"
-import type { Word, HintKey } from "./types"
+import type { Word, HintKey, GameMode } from "./types"
 import { indexOfWord, swapElements } from "./utils"
 import { gameModes } from "./gameModes"
 import translateSentence from "./translateSentence"
@@ -14,23 +14,16 @@ export function addRandomHint(): void {
 	if (availableHints.length === 0) return
 
 	const selectedHint = selectRandomHint(availableHints)
-
-	if (selectedHint === "extraLife") {
-		gameState.updateLives(1)
-		showNotification("+1 life", "info")
-	} else {
-		gameState.updateHints(selectedHint, 1)
-		showNotification(`+1 hint: ${selectedHint}`, "info")
-	}
+	applySelectedHint(selectedHint)
 }
 
-function getAvailableHints(currentMode) {
+function getAvailableHints(currentMode: GameMode): Array<{ hintType: string; weight: number }> {
 	return Object.entries(currentMode.hintsWeight)
 		.filter(([_, weight]) => weight !== null)
 		.map(([hintType, weight]) => ({ hintType, weight: weight as number }))
 }
 
-function selectRandomHint(availableHints) {
+function selectRandomHint(availableHints: Array<{ hintType: string; weight: number }>): HintKey {
 	const totalWeight = availableHints.reduce((sum, hint) => sum + hint.weight, 0)
 	let randomValue = Math.random() * totalWeight
 
@@ -42,9 +35,18 @@ function selectRandomHint(availableHints) {
 	}
 }
 
+function applySelectedHint(selectedHint: HintKey): void {
+	if (selectedHint === "extraLife") {
+		gameState.updateLives(1)
+		showNotification("+1 life", "info")
+	} else {
+		gameState.updateHints(selectedHint, 1)
+		showNotification(`+1 hint: ${selectedHint}`, "info")
+	}
+}
+
 export function lockRandomWord(): void {
-	const $currentSentence = get(currentSentence)
-	const [originalWords, scrambledWords] = [$currentSentence.words, $currentSentence.scrambledWords]
+	const { words: originalWords, scrambledWords } = get(currentSentence)
 	const wordsNotInCorrectPosition = getWordsNotInCorrectPosition(originalWords, scrambledWords)
 
 	if (wordsNotInCorrectPosition.length === 0) {
@@ -53,14 +55,11 @@ export function lockRandomWord(): void {
 	}
 
 	const randomWord = _.sample(wordsNotInCorrectPosition)
-	const correctPosition = originalWords.findIndex(w => w.token === randomWord.token && !w.locked)
+	const correctPosition = findCorrectPosition(originalWords, randomWord)
 	const currentPosition = indexOfWord(scrambledWords, randomWord.id)
 
-	swapElements(scrambledWords, currentPosition, correctPosition)
-	scrambledWords[correctPosition].locked = true
-
-	currentSentence.update(sentence => ({ ...sentence, scrambledWords }))
-	gameState.updateHints("lock", -1)
+	swapAndLockWord(scrambledWords, currentPosition, correctPosition)
+	updateSentenceAndHints(scrambledWords)
 }
 
 function getWordsNotInCorrectPosition(originalWords: Word[], scrambledWords: Word[]): Word[] {
@@ -70,9 +69,22 @@ function getWordsNotInCorrectPosition(originalWords: Word[], scrambledWords: Wor
 	})
 }
 
+function findCorrectPosition(originalWords: Word[], word: Word): number {
+	return originalWords.findIndex(w => w.token === word.token && !w.locked)
+}
+
+function swapAndLockWord(scrambledWords: Word[], currentPosition: number, correctPosition: number): void {
+	swapElements(scrambledWords, currentPosition, correctPosition)
+	scrambledWords[correctPosition].locked = true
+}
+
+function updateSentenceAndHints(scrambledWords: Word[]): void {
+	currentSentence.update(sentence => ({ ...sentence, scrambledWords }))
+	gameState.updateHints("lock", -1)
+}
+
 export function connectRandomWords(): void {
-	const $currentSentence = get(currentSentence)
-	const [originalWords, scrambledWords] = [$currentSentence.words, $currentSentence.scrambledWords]
+	const { words: originalWords, scrambledWords } = get(currentSentence)
 	const availableConnections = findAvailableConnections(originalWords, scrambledWords)
 
 	if (availableConnections.length === 0) {
@@ -81,25 +93,16 @@ export function connectRandomWords(): void {
 	}
 
 	const { firstWord, secondWord } = _.sample(availableConnections)
-	const connectionColor = `#${_.padStart(_.random(0x1000000).toString(16), 6, "0")}`
-	const firstWordIndex = indexOfWord(scrambledWords, firstWord.id)
-	const secondWordIndex = indexOfWord(scrambledWords, secondWord.id)
-
-	scrambledWords[firstWordIndex].connectionRight = connectionColor
-	scrambledWords[secondWordIndex].connectionLeft = connectionColor
-
-	currentSentence.update(sentence => ({ ...sentence, scrambledWords }))
-	gameState.updateHints("connect", -1)
+	connectWords(scrambledWords, firstWord, secondWord)
+	updateSentenceAndConnectionHints(scrambledWords)
 }
 
 function findAvailableConnections(
 	originalWords: Word[],
 	scrambledWords: Word[]
-): { firstWord: Word; secondWord: Word }[] {
+): Array<{ firstWord: Word; secondWord: Word }> {
 	return originalWords
-		.filter(word => {
-			return indexOfWord(originalWords, word.id) !== originalWords.length - 1
-		})
+		.filter(word => indexOfWord(originalWords, word.id) !== originalWords.length - 1)
 		.map(word => ({
 			firstWord: word,
 			secondWord: originalWords[indexOfWord(originalWords, word.id) + 1],
@@ -110,23 +113,64 @@ function findAvailableConnections(
 function isValidConnection(firstWord: Word, secondWord: Word, originalWords: Word[], scrambledWords: Word[]): boolean {
 	const firstWordIndex = indexOfWord(originalWords, firstWord.id)
 	const secondWordIndex = indexOfWord(originalWords, secondWord.id)
-	const areAlreadyNeighbors =
+
+	const areAlreadyNeighbors = checkIfNeighbors(scrambledWords, firstWordIndex, secondWordIndex, firstWord, secondWord)
+	const haveConflictingConnection = checkConflictingConnections(
+		firstWord,
+		secondWord,
+		originalWords,
+		firstWordIndex,
+		secondWordIndex
+	)
+
+	return !(firstWord.connectionRight || secondWord.connectionLeft || areAlreadyNeighbors || haveConflictingConnection)
+}
+
+function checkIfNeighbors(
+	scrambledWords: Word[],
+	firstWordIndex: number,
+	secondWordIndex: number,
+	firstWord: Word,
+	secondWord: Word
+): boolean {
+	return (
 		scrambledWords[firstWordIndex + 1].token === secondWord.token ||
 		scrambledWords[secondWordIndex - 1].token === firstWord.token
-	const alreadyHaveConflictingConnection =
-		(firstWord.connectionLeft && originalWords[firstWordIndex - 1] !== originalWords[secondWordIndex - 2]) ||
-		(secondWord.connectionRight && originalWords[secondWordIndex + 1] !== originalWords[firstWordIndex + 2])
-
-	return !(
-		firstWord.connectionRight ||
-		secondWord.connectionLeft ||
-		areAlreadyNeighbors ||
-		alreadyHaveConflictingConnection
 	)
 }
 
+function checkConflictingConnections(
+	firstWord: Word,
+	secondWord: Word,
+	originalWords: Word[],
+	firstWordIndex: number,
+	secondWordIndex: number
+): boolean {
+	return (
+		(firstWord.connectionLeft && originalWords[firstWordIndex - 1] !== originalWords[secondWordIndex - 2]) ||
+		(secondWord.connectionRight && originalWords[secondWordIndex + 1] !== originalWords[firstWordIndex + 2])
+	)
+}
+
+function connectWords(scrambledWords: Word[], firstWord: Word, secondWord: Word): void {
+	const connectionColor = generateRandomColor()
+	const firstWordIndex = indexOfWord(scrambledWords, firstWord.id)
+	const secondWordIndex = indexOfWord(scrambledWords, secondWord.id)
+
+	scrambledWords[firstWordIndex].connectionRight = connectionColor
+	scrambledWords[secondWordIndex].connectionLeft = connectionColor
+}
+
+function generateRandomColor(): string {
+	return `#${_.padStart(_.random(0x1000000).toString(16), 6, "0")}`
+}
+
+function updateSentenceAndConnectionHints(scrambledWords: Word[]): void {
+	currentSentence.update(sentence => ({ ...sentence, scrambledWords }))
+	gameState.updateHints("connect", -1)
+}
+
 export async function getTranslation(language: string): Promise<string | null> {
-	let sentenceTranslation
 	gameState.updateHints("translate", -1)
-	return (sentenceTranslation = await translateSentence(get(currentSentence).current_sentence, language))
+	return await translateSentence(get(currentSentence).current_sentence, language)
 }
