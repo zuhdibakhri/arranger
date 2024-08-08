@@ -21,6 +21,7 @@
 	},
 	"dependencies": {
 		"@google/generative-ai": "^0.16.0",
+		"compromise": "^14.14.0",
 		"concurrently": "^8.2.2",
 		"cors": "^2.8.5",
 		"dotenv": "^16.4.5",
