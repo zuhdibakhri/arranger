@@ -3,7 +3,7 @@ import nlp from "compromise"
 const createPunctuationToken = (char, id) => ({
 	id,
 	text: char,
-	tags: char === " " ? ["Space"] : ["Punctuation"],
+	tags: ["Punctuation"],
 	root: char,
 })
 
@@ -18,10 +18,13 @@ const addTokens = (tokens, content, isPunctuation, id, tags) => {
 	if (content === "") return id
 
 	if (isPunctuation) {
-		content.split("").forEach((char, index) => {
-			tokens.push(createPunctuationToken(char, id + index))
+		content.split("").forEach(char => {
+			if (char !== " ") {
+				tokens.push(createPunctuationToken(char, id))
+				id++
+			}
 		})
-		return id + content.length
+		return id
 	} else {
 		tokens.push(createWordToken(content, id, tags))
 		return id + 1
