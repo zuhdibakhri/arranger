@@ -13,7 +13,7 @@ export type Sentence = {
 export type Word = {
 	id: number
 	token: string
-	tag: string
+	tag: string[]
 	lemma: string
 	syllable_count: number
 	locked: boolean

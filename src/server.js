@@ -46,7 +46,7 @@ const processQueryResult = rows => {
 					words: words.map(word => ({
 						id: word.id,
 						token: word.text,
-						tag: word.tags.join(","),
+						tag: word.tags,
 						root: word.root,
 					})),
 					prev_sentences: prevSentences,
