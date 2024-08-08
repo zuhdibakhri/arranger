@@ -3,7 +3,6 @@ import { get } from "svelte/store"
 import { gameState } from "./stores"
 import { gameModes } from "./gameModes"
 
-const MAX_WORD_SYLLABLES = 3
 const CONSTANT_RANGE = { min: 5, max: 7 }
 const SYLLABLE_GROUPS = [
 	{ min: 5, max: 7 },
@@ -50,15 +49,10 @@ function getSyllableRange(level: number, useConstantRange: boolean): { min: numb
 	return SYLLABLE_GROUPS[groupIndex]
 }
 
-async function fetchSentencesFromAPI(
-	minSyllables: number,
-	maxSyllables: number,
-	maxWordSyllables: number,
-): Promise<Sentence[]> {
+async function fetchSentencesFromAPI(minSyllables: number, maxSyllables: number): Promise<Sentence[]> {
 	const apiUrl = new URL(import.meta.env.VITE_API_URL)
 	apiUrl.searchParams.append("minSyllables", minSyllables.toString())
 	apiUrl.searchParams.append("maxSyllables", maxSyllables.toString())
-	apiUrl.searchParams.append("maxWordSyllables", maxWordSyllables.toString())
 
 	const response = await fetch(apiUrl.toString())
 	if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
@@ -72,12 +66,17 @@ export async function selectSentence(level: number): Promise<Sentence | null> {
 	const { min, max } = getSyllableRange(level, constantScoreRange)
 
 	try {
-		const eligibleSentences = await fetchSentencesFromAPI(min, max, MAX_WORD_SYLLABLES)
+		const eligibleSentences = await fetchSentencesFromAPI(min, max)
 		if (eligibleSentences.length === 0) {
 			console.warn(`No eligible sentences found for level ${level} and syllable range ${min}-${max}`)
 			return null
 		}
-		return enhanceSentenceWithGameProperties(eligibleSentences[0], level)
+		const sentence = eligibleSentences[0]
+		if (!sentence || !Array.isArray(sentence.words)) {
+			console.error("Invalid sentence structure received from API")
+			return null
+		}
+		return enhanceSentenceWithGameProperties(sentence, level)
 	} catch (error) {
 		console.error("Error fetching sentences:", error)
 		return null

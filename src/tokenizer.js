@@ -1,27 +1,20 @@
 import nlp from "compromise"
 
-interface Token {
-	id: number
-	text: string
-	tags: string[]
-	root: string
-}
-
-const createPunctuationToken = (char: string, id: number): Token => ({
+const createPunctuationToken = (char, id) => ({
 	id,
 	text: char,
 	tags: char === " " ? ["Space"] : ["Punctuation"],
 	root: char,
 })
 
-const createWordToken = (content: string, id: number, tags: string[]): Token => {
+const createWordToken = (content, id, tags) => {
 	const doc = nlp(content)
 	doc.compute("root")
 	const rootWord = doc.json()[0].terms[0].root || doc.json()[0].terms[0].normal
 	return { id, text: content, tags, root: rootWord }
 }
 
-const addTokens = (tokens: Token[], content: string, isPunctuation: boolean, id: number, tags?: string[]): number => {
+const addTokens = (tokens, content, isPunctuation, id, tags) => {
 	if (content === "") return id
 
 	if (isPunctuation) {
@@ -30,23 +23,23 @@ const addTokens = (tokens: Token[], content: string, isPunctuation: boolean, id:
 		})
 		return id + content.length
 	} else {
-		tokens.push(createWordToken(content, id, tags!))
+		tokens.push(createWordToken(content, id, tags))
 		return id + 1
 	}
 }
 
-const normalizeText = (text: string): string => {
+const normalizeText = text => {
 	const doc = nlp(text)
 	doc.normalize({ unicode: true, acronyms: true })
 	return doc.text().replace(/--/g, " – ")
 }
 
-const processSentences = (text: string): Token[][] => {
+export const processSentences = text => {
 	const normalizedText = normalizeText(text)
 	const doc = nlp(normalizedText)
 
 	return doc.sentences().map(sentence => {
-		const tokens: Token[] = []
+		const tokens = []
 		let id = 0
 
 		sentence.terms().forEach(term => {
@@ -57,10 +50,5 @@ const processSentences = (text: string): Token[][] => {
 		})
 
 		return tokens
-	}) as Token[][]
+	})[0]
 }
-
-const inputText = "I am building a building."
-const result = processSentences(inputText)[0]
-
-console.log(JSON.stringify(result, null, 2))

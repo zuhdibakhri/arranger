@@ -1,93 +1,90 @@
 import express from "express"
 import pool from "./database.js"
 import cors from "cors"
+import { processSentences } from "./tokenizer.js"
 
 const app = express()
 const port = 3000
 
 app.use(cors())
+
 const processQueryResult = rows => {
-	return rows.map(processRow)
-}
+	if (rows.length === 0) return []
 
-const processRow = row => {
-	return {
-		id: row.id,
-		current_sentence: row.current_sentence,
-		total_syllables: row.total_syllables,
-		words: parseWords(row.words, row.id),
-		prev_sentences: parseSentences(row.prev_sentences),
-		next_sentences: parseSentences(row.next_sentences),
-	}
-}
-
-const parseWords = (wordsString, sentenceId) => {
-	if (!wordsString) return []
-
-	return wordsString.split("|").map(word => {
-		const [id, token, tag, lemma, syllable_count] = word.split(":")
-		return {
-			id: Number(id),
-			sentence_id: sentenceId,
-			token,
-			tag,
-			lemma,
-			syllable_count: Number(syllable_count),
+	const groupedSentences = rows.reduce((acc, row) => {
+		if (!acc[row.paragraph_index]) {
+			acc[row.paragraph_index] = []
 		}
-	})
+		acc[row.paragraph_index].push(row)
+		return acc
+	}, {})
+
+	const paragraphs = Object.values(groupedSentences)
+	const selectedParagraph = paragraphs[Math.floor(Math.random() * paragraphs.length)]
+
+	const mainSentenceIndex = Math.floor(Math.random() * selectedParagraph.length)
+
+	return [
+		selectedParagraph
+			.map((row, index) => {
+				const words = processSentences(row.current_sentence)
+				const prevSentences = selectedParagraph.slice(0, index).map(s => ({
+					id: s.id,
+					sentence: s.current_sentence,
+					total_syllables: s.total_syllables,
+				}))
+				const nextSentences = selectedParagraph.slice(index + 1).map(s => ({
+					id: s.id,
+					sentence: s.current_sentence,
+					total_syllables: s.total_syllables,
+				}))
+
+				return {
+					id: row.id,
+					current_sentence: row.current_sentence,
+					total_syllables: row.total_syllables,
+					words: words.map(word => ({
+						id: word.id,
+						token: word.text,
+						tag: word.tags.join(","),
+						root: word.root,
+					})),
+					prev_sentences: prevSentences,
+					next_sentences: nextSentences,
+					is_main: index === mainSentenceIndex,
+				}
+			})
+			.find(sentence => sentence.is_main),
+	]
 }
 
-const parseSentences = sentencesString => {
-	if (!sentencesString) return []
-
-	return sentencesString
-		.split("|")
-		.filter(Boolean)
-		.map(sentence => {
-			const [id, sentenceText, total_syllables] = sentence.split(":")
-			return {
-				id: Number(id),
-				sentence: sentenceText,
-				total_syllables: Number(total_syllables),
-			}
-		})
-}
 app.get("/sentences", async (req, res) => {
 	try {
-		const { minSyllables, maxSyllables, maxWordSyllables = 5 } = req.query
-		const sentences = await fetchSentences(minSyllables, maxSyllables, maxWordSyllables)
+		const { minSyllables, maxSyllables } = req.query
+		const sentences = await fetchSentences(minSyllables, maxSyllables)
 		res.json(sentences)
 	} catch (error) {
 		handleError(error, res)
 	}
 })
 
-async function fetchSentences(minSyllables, maxSyllables, maxWordSyllables) {
+async function fetchSentences(minSyllables, maxSyllables) {
 	const query = buildSentenceQuery()
-	const [rows] = await pool.query(query, [minSyllables, maxSyllables, maxWordSyllables])
+	const [rows] = await pool.query(query, [minSyllables, maxSyllables])
 	return processQueryResult(rows)
 }
 
 function buildSentenceQuery() {
 	return `
-		SELECT 
-				s.id, s.current_sentence, s.total_syllables,
-				COALESCE(GROUP_CONCAT(DISTINCT w.id, ':', w.token, ':', w.tag, ':', w.lemma, ':', w.syllable_count SEPARATOR '|'), '') AS words,
-				COALESCE(GROUP_CONCAT(DISTINCT CASE WHEN sr.relation_type = 'prev' THEN CONCAT(rs.id, ':', rs.current_sentence, ':', rs.total_syllables) END SEPARATOR '|'), '') AS prev_sentences,
-				COALESCE(GROUP_CONCAT(DISTINCT CASE WHEN sr.relation_type = 'next' THEN CONCAT(rs.id, ':', rs.current_sentence, ':', rs.total_syllables) END SEPARATOR '|'), '') AS next_sentences
-		FROM sentences s
-		JOIN words w ON s.id = w.sentence_id
-		LEFT JOIN sentence_relations sr ON s.id = sr.main_sentence_id
-		LEFT JOIN sentences rs ON sr.related_sentence_id = rs.id
-		WHERE s.total_syllables BETWEEN ? AND ?
-		GROUP BY s.id
-		HAVING MAX(w.syllable_count) <= ?
-				AND s.total_syllables >= 0.5 * GREATEST(COALESCE(MAX(CASE WHEN sr.relation_type = 'prev' THEN rs.total_syllables END), 0),
-																								COALESCE(MAX(CASE WHEN sr.relation_type = 'next' THEN rs.total_syllables END), 0))
-				AND COUNT(DISTINCT w.id) >= 3
-		ORDER BY RAND()
-		LIMIT 1
-    `
+    SELECT 
+      id, 
+      current_sentence, 
+      total_syllables, 
+      paragraph_index
+    FROM sentences
+    WHERE total_syllables BETWEEN ? AND ?
+    ORDER BY paragraph_index, id
+  `
 }
 
 function handleError(error, res) {
