@@ -8,53 +8,37 @@ const port = 3000
 
 app.use(cors())
 
-const processQueryResult = rows => {
+const processQueryResult = async rows => {
 	if (rows.length === 0) return []
 
-	const groupedSentences = rows.reduce((acc, row) => {
-		if (!acc[row.paragraph_index]) {
-			acc[row.paragraph_index] = []
-		}
-		acc[row.paragraph_index].push(row)
-		return acc
-	}, {})
+	const selectedSentence = rows[Math.floor(Math.random() * rows.length)]
+	const words = processSentences(selectedSentence.current_sentence)
 
-	const paragraphs = Object.values(groupedSentences)
-	const selectedParagraph = paragraphs[Math.floor(Math.random() * paragraphs.length)]
+	const surroundingSentences = await fetchSurroundingSentences(selectedSentence.id, selectedSentence.paragraph_index)
 
-	const mainSentenceIndex = Math.floor(Math.random() * selectedParagraph.length)
+	const processedWords = words.map(word => ({
+		id: word.id,
+		token: word.text,
+		tag: word.tags,
+		root: word.root || "",
+		syllable_count: word.syllable_count,
+	}))
+
+	const processSurroundingSentences = sentences =>
+		sentences.map(s => ({
+			sentence: s.current_sentence,
+			total_score: s.total_syllables,
+		}))
 
 	return [
-		selectedParagraph
-			.map((row, index) => {
-				const words = processSentences(row.current_sentence)
-				const prevSentences = selectedParagraph.slice(0, index).map(s => ({
-					id: s.id,
-					sentence: s.current_sentence,
-					total_syllables: s.total_syllables,
-				}))
-				const nextSentences = selectedParagraph.slice(index + 1).map(s => ({
-					id: s.id,
-					sentence: s.current_sentence,
-					total_syllables: s.total_syllables,
-				}))
-
-				return {
-					id: row.id,
-					current_sentence: row.current_sentence,
-					total_syllables: row.total_syllables,
-					words: words.map(word => ({
-						id: word.id,
-						token: word.text,
-						tag: word.tags,
-						root: word.root,
-					})),
-					prev_sentences: prevSentences,
-					next_sentences: nextSentences,
-					is_main: index === mainSentenceIndex,
-				}
-			})
-			.find(sentence => sentence.is_main),
+		{
+			id: selectedSentence.id,
+			current_sentence: selectedSentence.current_sentence,
+			words: processedWords,
+			total_syllables: selectedSentence.total_syllables,
+			prev_sentences: processSurroundingSentences(surroundingSentences.prev),
+			next_sentences: processSurroundingSentences(surroundingSentences.next),
+		},
 	]
 }
 
@@ -83,8 +67,39 @@ function buildSentenceQuery() {
       paragraph_index
     FROM sentences
     WHERE total_syllables BETWEEN ? AND ?
-    ORDER BY paragraph_index, id
+    ORDER BY RAND()
+    LIMIT 1
   `
+}
+
+async function fetchSurroundingSentences(sentenceId, paragraphIndex) {
+	const query = `
+    SELECT 
+      id, 
+      current_sentence, 
+      total_syllables
+    FROM sentences
+    WHERE paragraph_index = ?
+    ORDER BY id
+    `
+	const [rows] = await pool.query(query, [paragraphIndex])
+
+	if (!Array.isArray(rows)) {
+		console.error("Unexpected result type from database query")
+		return { prev: [], next: [] }
+	}
+
+	const sentenceIndex = rows.findIndex(row => row.id === sentenceId)
+
+	if (sentenceIndex === -1) {
+		console.error("Selected sentence not found in paragraph")
+		return { prev: [], next: [] }
+	}
+
+	return {
+		prev: rows.slice(0, sentenceIndex),
+		next: rows.slice(sentenceIndex + 1),
+	}
 }
 
 function handleError(error, res) {

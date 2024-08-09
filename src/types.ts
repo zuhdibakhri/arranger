@@ -14,12 +14,12 @@ export type Word = {
 	id: number
 	token: string
 	tag: string[]
-	lemma: string
+	root: string
 	syllable_count: number
-	locked: boolean
-	selected: boolean
-	connectionLeft: string
-	connectionRight: string
+	locked?: boolean
+	selected?: boolean
+	connectionLeft?: string
+	connectionRight?: string
 }
 
 export type SurroundingSentences = {

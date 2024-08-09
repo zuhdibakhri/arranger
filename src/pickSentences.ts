@@ -39,6 +39,8 @@ function enhanceSentenceWithGameProperties(sentence: Sentence, id: number): Sent
 		id,
 		words: sentence.words.map(resetWordProperties),
 		scrambledWords: sentence.words.map(resetWordProperties),
+		prev_sentences: sentence.prev_sentences || [],
+		next_sentences: sentence.next_sentences || [],
 	}
 }
 
