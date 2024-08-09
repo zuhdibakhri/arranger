@@ -20,7 +20,7 @@ const processQueryResult = async rows => {
 		id: word.id,
 		token: word.text,
 		tag: word.tags,
-		root: word.root || "",
+		root: word.root,
 		syllable_count: word.syllable_count,
 	}))
 
