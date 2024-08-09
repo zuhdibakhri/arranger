@@ -31,15 +31,8 @@ const addTokens = (tokens, content, isPunctuation, id, tags) => {
 	}
 }
 
-const normalizeText = text => {
-	const doc = nlp(text)
-	doc.normalize({ unicode: true, acronyms: true })
-	return doc.text().replace(/--/g, " – ")
-}
-
 export const processSentences = text => {
-	const normalizedText = normalizeText(text)
-	const doc = nlp(normalizedText)
+	const doc = nlp(text)
 
 	return doc.sentences().map(sentence => {
 		const tokens = []
